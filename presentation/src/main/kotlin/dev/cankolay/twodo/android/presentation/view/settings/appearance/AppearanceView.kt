@@ -1,0 +1,54 @@
+package dev.cankolay.twodo.android.presentation.view.settings.appearance
+
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import dev.cankolay.twodo.android.presentation.composable.CardStackList
+import dev.cankolay.twodo.android.presentation.composable.CardStackListItem
+import dev.cankolay.twodo.android.presentation.composable.Icon
+import dev.cankolay.twodo.android.presentation.composable.layout.AppLayout
+import dev.cankolay.twodo.android.presentation.composable.layout.AppLazyColumn
+import dev.cankolay.twodo.android.presentation.composition.LocalNavBackStack
+import dev.cankolay.twodo.android.presentation.navigation.route.Route
+import dev.cankolay.twodo.android.presentation.navigation.route.getDetails
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AppearanceView() {
+    val navBackStack = LocalNavBackStack.current
+
+    AppLayout(route = Route.Appearance) {
+        AppLazyColumn {
+            item {
+                val routes = listOf(
+                    Route.Theme, Route.MaterialYou
+                )
+
+                CardStackList(
+                    modifier =
+                        Modifier
+                            .padding(horizontal = 16.dp),
+                    items = routes.map { route ->
+                        val details = route.getDetails()
+
+                        CardStackListItem(
+                            title = details.title,
+                            description = details.description,
+                            onClick = {
+                                navBackStack.add(element = route)
+                            },
+                            leadingContent = {
+                                Icon(
+                                    icon = details.icon.default,
+                                )
+                            },
+                        )
+                    })
+
+            }
+        }
+    }
+}

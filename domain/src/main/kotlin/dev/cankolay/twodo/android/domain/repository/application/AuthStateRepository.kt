@@ -1,0 +1,9 @@
+package dev.cankolay.twodo.android.domain.repository.application
+
+import dev.cankolay.twodo.android.domain.model.application.AuthState
+import kotlinx.coroutines.flow.Flow
+
+interface AuthStateRepository {
+    val state: Flow<AuthState>
+    suspend fun update(state: AuthState)
+}
