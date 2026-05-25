@@ -5,11 +5,11 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import dev.cankolay.twodo.android.presentation.composable.CardStackList
-import dev.cankolay.twodo.android.presentation.composable.CardStackListItem
-import dev.cankolay.twodo.android.presentation.composable.Icon
-import dev.cankolay.twodo.android.presentation.composable.layout.AppLayout
-import dev.cankolay.twodo.android.presentation.composable.layout.AppLazyColumn
+import dev.cankolay.twodo.android.presentation.composable.app.CardStackList
+import dev.cankolay.twodo.android.presentation.composable.app.CardStackListItem
+import dev.cankolay.twodo.android.presentation.composable.app.Icon
+import dev.cankolay.twodo.android.presentation.composable.app.layout.AppLayout
+import dev.cankolay.twodo.android.presentation.composable.app.layout.AppLazyColumn
 import dev.cankolay.twodo.android.presentation.composition.LocalNavBackStack
 import dev.cankolay.twodo.android.presentation.navigation.route.Route
 import dev.cankolay.twodo.android.presentation.navigation.route.getDetails

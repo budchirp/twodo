@@ -1,4 +1,4 @@
-package dev.cankolay.twodo.android.presentation.composable
+package dev.cankolay.twodo.android.presentation.composable.app
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -117,5 +117,35 @@ fun CardStackList(
                 )
             }
         }
+    )
+}
+
+@Composable
+fun CardList(
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.surfaceContainer,
+    title: String,
+    description: String? = null,
+    onClick: (() -> Unit)? = null,
+    enabled: Boolean = onClick != null,
+    leadingContent: @Composable (() -> Unit)? = null,
+    trailingContent: @Composable (() -> Unit)? = null,
+    contentPadding: PaddingValues? = null,
+) {
+    CardStackList(
+        modifier = modifier,
+        color = color,
+        items = listOf(
+            CardStackListItem(
+                title = title,
+                description = description,
+                onClick = onClick,
+                enabled = enabled,
+                leadingContent = leadingContent,
+                trailingContent = trailingContent,
+                contentPadding = contentPadding,
+                contentSize = null
+            )
+        )
     )
 }

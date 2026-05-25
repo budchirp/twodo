@@ -13,10 +13,11 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.cankolay.twodo.android.domain.model.application.Theme
 import dev.cankolay.twodo.android.presentation.R
-import dev.cankolay.twodo.android.presentation.composable.CardStackList
-import dev.cankolay.twodo.android.presentation.composable.CardStackListItem
-import dev.cankolay.twodo.android.presentation.composable.layout.AppLayout
-import dev.cankolay.twodo.android.presentation.composable.layout.AppLazyColumn
+import dev.cankolay.twodo.android.presentation.composable.app.CardList
+import dev.cankolay.twodo.android.presentation.composable.app.CardStackList
+import dev.cankolay.twodo.android.presentation.composable.app.CardStackListItem
+import dev.cankolay.twodo.android.presentation.composable.app.layout.AppLayout
+import dev.cankolay.twodo.android.presentation.composable.app.layout.AppLazyColumn
 import dev.cankolay.twodo.android.presentation.navigation.route.Route
 import dev.cankolay.twodo.android.presentation.viewmodel.application.SettingsViewModel
 
@@ -36,7 +37,7 @@ fun ThemeView(settingsViewModel: SettingsViewModel = hiltViewModel()) {
                         items = Theme.entries.map { theme ->
                             val onClick = {
                                 settingsViewModel.updateSettings(
-                                    state.copy(
+                                    settingsState = state.copy(
                                         theme = theme
                                     )
                                 )
@@ -66,30 +67,26 @@ fun ThemeView(settingsViewModel: SettingsViewModel = hiltViewModel()) {
                 item {
                     val onClick = { isAmoled: Boolean ->
                         settingsViewModel.updateSettings(
-                            state.copy(
+                            settingsState = state.copy(
                                 isAmoled = isAmoled
                             )
                         )
                     }
 
-                    CardStackList(
+                    CardList(
                         modifier =
                             Modifier
                                 .padding(horizontal = 16.dp),
-                        items = listOf(
-                            CardStackListItem(
-                                title = stringResource(id = R.string.amoled),
+                        title = stringResource(id = R.string.amoled),
+                        enabled = state.theme != Theme.LIGHT,
+                        onClick = { onClick(!state.isAmoled) },
+                        trailingContent = {
+                            Switch(
+                                checked = state.theme != Theme.LIGHT && state.isAmoled,
                                 enabled = state.theme != Theme.LIGHT,
-                                onClick = { onClick(!state.isAmoled) },
-                                trailingContent = {
-                                    Switch(
-                                        checked = state.theme != Theme.LIGHT && state.isAmoled,
-                                        enabled = state.theme != Theme.LIGHT,
-                                        onCheckedChange = onClick,
-                                    )
-                                },
+                                onCheckedChange = onClick,
                             )
-                        )
+                        },
                     )
                 }
             }

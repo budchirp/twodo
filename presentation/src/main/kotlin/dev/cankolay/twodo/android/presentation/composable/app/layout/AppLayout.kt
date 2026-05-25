@@ -1,4 +1,4 @@
-package dev.cankolay.twodo.android.presentation.composable.layout
+package dev.cankolay.twodo.android.presentation.composable.app.layout
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets

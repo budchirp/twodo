@@ -1,4 +1,4 @@
-package dev.cankolay.twodo.android.presentation.composable
+package dev.cankolay.twodo.android.presentation.composable.app
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,7 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import dev.cankolay.twodo.android.presentation.composable.layout.AppLazyColumn
+import dev.cankolay.twodo.android.presentation.composable.app.layout.AppLazyColumn
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable

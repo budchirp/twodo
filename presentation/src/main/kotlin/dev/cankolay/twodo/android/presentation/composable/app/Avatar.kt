@@ -1,4 +1,4 @@
-package dev.cankolay.twodo.android.presentation.composable
+package dev.cankolay.twodo.android.presentation.composable.app
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

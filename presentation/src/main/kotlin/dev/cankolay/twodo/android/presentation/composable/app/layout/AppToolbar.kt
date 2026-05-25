@@ -1,4 +1,4 @@
-package dev.cankolay.twodo.android.presentation.composable.layout
+package dev.cankolay.twodo.android.presentation.composable.app.layout
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -16,7 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import dev.cankolay.twodo.android.presentation.composable.Icon
+import dev.cankolay.twodo.android.presentation.composable.app.Icon
 import dev.cankolay.twodo.android.presentation.composition.LocalNavBackStack
 import dev.cankolay.twodo.android.presentation.motion.slideInY
 import dev.cankolay.twodo.android.presentation.navigation.route.Route

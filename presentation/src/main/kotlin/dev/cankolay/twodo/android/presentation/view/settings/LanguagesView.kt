@@ -10,10 +10,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.os.LocaleListCompat
 import dev.cankolay.twodo.android.presentation.R
-import dev.cankolay.twodo.android.presentation.composable.CardStackList
-import dev.cankolay.twodo.android.presentation.composable.CardStackListItem
-import dev.cankolay.twodo.android.presentation.composable.layout.AppLayout
-import dev.cankolay.twodo.android.presentation.composable.layout.AppLazyColumn
+import dev.cankolay.twodo.android.presentation.composable.app.CardStackList
+import dev.cankolay.twodo.android.presentation.composable.app.CardStackListItem
+import dev.cankolay.twodo.android.presentation.composable.app.layout.AppLayout
+import dev.cankolay.twodo.android.presentation.composable.app.layout.AppLazyColumn
 import dev.cankolay.twodo.android.presentation.navigation.route.Route
 
 @OptIn(ExperimentalMaterial3Api::class)

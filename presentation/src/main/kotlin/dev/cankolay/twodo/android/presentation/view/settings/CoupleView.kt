@@ -6,7 +6,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -21,7 +20,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -44,13 +42,14 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.cankolay.twodo.android.domain.model.api.ApiResult
 import dev.cankolay.twodo.android.presentation.R
-import dev.cankolay.twodo.android.presentation.composable.Avatar
-import dev.cankolay.twodo.android.presentation.composable.Card
-import dev.cankolay.twodo.android.presentation.composable.CardStackList
-import dev.cankolay.twodo.android.presentation.composable.CardStackListItem
-import dev.cankolay.twodo.android.presentation.composable.Icon
-import dev.cankolay.twodo.android.presentation.composable.layout.AppLayout
-import dev.cankolay.twodo.android.presentation.composable.layout.AppLazyColumn
+import dev.cankolay.twodo.android.presentation.composable.app.Avatar
+import dev.cankolay.twodo.android.presentation.composable.app.Card
+import dev.cankolay.twodo.android.presentation.composable.app.CardStackList
+import dev.cankolay.twodo.android.presentation.composable.app.CardStackListItem
+import dev.cankolay.twodo.android.presentation.composable.app.Icon
+import dev.cankolay.twodo.android.presentation.composable.app.layout.AppBottomSheet
+import dev.cankolay.twodo.android.presentation.composable.app.layout.AppLayout
+import dev.cankolay.twodo.android.presentation.composable.app.layout.AppLazyColumn
 import dev.cankolay.twodo.android.presentation.composition.LocalNavBackStack
 import dev.cankolay.twodo.android.presentation.composition.LocalSnackbarHostState
 import dev.cankolay.twodo.android.presentation.navigation.route.Route
@@ -272,68 +271,41 @@ fun BreakupPartnerSheet(
 
     val sheetState = rememberModalBottomSheetState()
 
-    ModalBottomSheet(
+    AppBottomSheet(
+        title = stringResource(id = R.string.break_up),
+        description = stringResource(id = R.string.break_up_desc),
+        onDismiss = onDismiss,
         sheetState = sheetState,
-        onDismissRequest = onDismiss
-    ) {
-        AppLazyColumn(contentPadding = PaddingValues(all = 16.dp), fill = false) {
-            item {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(space = 8.dp)
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.break_up),
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    )
-
-                    Text(
-                        text = stringResource(id = R.string.break_up_desc),
-                        style = MaterialTheme.typography.bodyLarge,
-                    )
+        actions = {
+            TextButton(
+                onClick = {
+                    scope.launch {
+                        sheetState.hide()
+                    }.invokeOnCompletion {
+                        onDismiss()
+                    }
                 }
+            ) {
+                Text(text = stringResource(id = R.string.cancel))
             }
 
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(
-                        space = 8.dp,
-                        alignment = Alignment.End
-                    )
-                ) {
-                    TextButton(
-                        onClick = {
-                            scope.launch {
-                                sheetState.hide()
-                            }.invokeOnCompletion {
-                                onDismiss()
-                            }
+            Button(
+                enabled = !isLoading,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError
+                ),
+                onClick = {
+                    scope.launch {
+                        if (onLeave()) {
+                            sheetState.hide()
+                            onDismiss()
                         }
-                    ) {
-                        Text(text = stringResource(id = R.string.cancel))
-                    }
-
-                    Button(
-                        enabled = !isLoading,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error,
-                            contentColor = MaterialTheme.colorScheme.onError
-                        ),
-                        onClick = {
-                            scope.launch {
-                                if (onLeave()) {
-                                    sheetState.hide()
-                                    onDismiss()
-                                }
-                            }
-                        }
-                    ) {
-                        Text(text = stringResource(id = R.string.break_up))
                     }
                 }
+            ) {
+                Text(text = stringResource(id = R.string.break_up))
             }
         }
-    }
+    )
 }

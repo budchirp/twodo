@@ -55,9 +55,13 @@
     <string name="feature_3_desc">Turn everyday tasks into care for each other</string>
 
     <string name="notes">Notes</string>
+    <string name="notes_error">Failed to get your notes</string>
+
     <string name="notes_empty_title">No notes yet</string>
     <string name="notes_empty_desc">Create the first shared note when something comes up.</string>
+
     <string name="create_note">Create note</string>
+
     <string name="delete_note">Delete note?</string>
     <string name="delete_note_desc">This shared note will be permanently deleted.</string>
 
@@ -123,4 +127,5 @@
 
     <string name="about_view_on">View on %1$s</string>
     <string name="about_view_on_desc">View this project on %1$s</string>
+    <string name="error">Error</string>
 </resources>

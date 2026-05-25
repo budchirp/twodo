@@ -1,39 +1,28 @@
 package dev.cankolay.twodo.android.presentation.view
 
 import androidx.browser.customtabs.CustomTabsIntent
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import coil3.compose.AsyncImage
 import dev.cankolay.twodo.android.domain.model.api.AuthApiConstants
 import dev.cankolay.twodo.android.presentation.R
-import dev.cankolay.twodo.android.presentation.composable.CardStackList
-import dev.cankolay.twodo.android.presentation.composable.CardStackListItem
-import dev.cankolay.twodo.android.presentation.composable.Icon
-import dev.cankolay.twodo.android.presentation.composable.layout.AppLayout
-import dev.cankolay.twodo.android.presentation.composable.layout.AppLazyColumn
+import dev.cankolay.twodo.android.presentation.composable.app.CardStackList
+import dev.cankolay.twodo.android.presentation.composable.app.CardStackListItem
+import dev.cankolay.twodo.android.presentation.composable.app.Icon
+import dev.cankolay.twodo.android.presentation.composable.app.layout.OnboardingLayout
 import dev.cankolay.twodo.android.presentation.navigation.route.Route
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -41,62 +30,26 @@ import dev.cankolay.twodo.android.presentation.navigation.route.Route
 fun WelcomeView() {
     val context = LocalContext.current
 
-    AppLayout(
+    OnboardingLayout(
         route = Route.Welcome,
-        topBar = {},
-        bottomBar = {
-            NavigationBar {
-                Button(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp), onClick = {
-                        val intent = CustomTabsIntent.Builder().setShowTitle(true).build()
+        title = stringResource(id = R.string.welcome),
+        description = stringResource(id = R.string.welcome_desc),
+        actions = {
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = {
+                    val intent = CustomTabsIntent.Builder().setShowTitle(true).build()
 
-                        intent.launchUrl(
-                            context,
-                            AuthApiConstants.AUTH_URL.toUri()
-                        )
-                    }) {
-                    Text(text = stringResource(id = R.string.continue_with_trash))
-                }
-            }
-        }
-    ) {
-        AppLazyColumn(
-            contentPadding = PaddingValues(top = 64.dp, bottom = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(space = 32.dp)
-        ) {
-            item {
-                Column(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(space = 32.dp)
-                ) {
-                    AsyncImage(
-                        model = context.packageManager.getApplicationIcon(context.packageName),
-                        contentDescription = null,
-                        modifier =
-                            Modifier
-                                .size(size = 64.dp)
-                                .clip(shape = CircleShape),
+                    intent.launchUrl(
+                        context,
+                        AuthApiConstants.AUTH_URL.toUri()
                     )
-
-                    Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
-                        Text(
-                            text = stringResource(id = R.string.welcome),
-                            style = MaterialTheme.typography.headlineLarge.copy(
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        )
-
-                        Text(
-                            text = stringResource(id = R.string.welcome_desc),
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                    }
                 }
+            ) {
+                Text(text = stringResource(id = R.string.continue_with_trash))
             }
-
+        },
+        lazyContent = {
             item {
                 data class FeatureItem(
                     val title: String,
@@ -135,5 +88,5 @@ fun WelcomeView() {
                     })
             }
         }
-    }
+    )
 }

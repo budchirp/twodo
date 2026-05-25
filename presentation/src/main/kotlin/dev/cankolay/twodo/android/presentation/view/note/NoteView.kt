@@ -2,7 +2,6 @@ package dev.cankolay.twodo.android.presentation.view.note
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,7 +19,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -39,7 +37,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -47,13 +44,13 @@ import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.BasicRichTextEditor
 import dev.cankolay.twodo.android.domain.model.api.ApiResult
 import dev.cankolay.twodo.android.presentation.R
-import dev.cankolay.twodo.android.presentation.composable.CardStackList
-import dev.cankolay.twodo.android.presentation.composable.CardStackListItem
-import dev.cankolay.twodo.android.presentation.composable.Icon
-import dev.cankolay.twodo.android.presentation.composable.layout.AppLayout
-import dev.cankolay.twodo.android.presentation.composable.layout.AppLazyColumn
-import dev.cankolay.twodo.android.presentation.composable.layout.AppTopAppBar
-import dev.cankolay.twodo.android.presentation.composable.layout.AppTopAppBarType
+import dev.cankolay.twodo.android.presentation.composable.app.CardStackList
+import dev.cankolay.twodo.android.presentation.composable.app.CardStackListItem
+import dev.cankolay.twodo.android.presentation.composable.app.Icon
+import dev.cankolay.twodo.android.presentation.composable.app.layout.AppBottomSheet
+import dev.cankolay.twodo.android.presentation.composable.app.layout.AppLayout
+import dev.cankolay.twodo.android.presentation.composable.app.layout.AppTopAppBar
+import dev.cankolay.twodo.android.presentation.composable.app.layout.AppTopAppBarType
 import dev.cankolay.twodo.android.presentation.composition.LocalNavBackStack
 import dev.cankolay.twodo.android.presentation.composition.LocalSnackbarHostState
 import dev.cankolay.twodo.android.presentation.navigation.route.Route
@@ -70,6 +67,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun NoteView(id: String, noteViewModel: NoteViewModel = hiltViewModel()) {
     val snackbarHostState = LocalSnackbarHostState.current
+
     val navBackStack = LocalNavBackStack.current
 
     val uiState by noteViewModel.uiState.collectAsStateWithLifecycle()
@@ -194,70 +192,70 @@ fun NoteView(id: String, noteViewModel: NoteViewModel = hiltViewModel()) {
             }
 
             if (showBottomSheet) {
-                ModalBottomSheet(sheetState = bottomSheetState, onDismissRequest = {
-                    showBottomSheet = false
-                }) {
-                    AppLazyColumn(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        contentPadding = PaddingValues(bottom = 16.dp),
-                        fill = false
-                    ) {
-                        item {
-                            val onClick = { completed: Boolean ->
-                                todo = todo.copy(completed = completed)
-                            }
+                val sheetTitle =
+                    if (todo.title.isBlank()) stringResource(id = R.string.notes) else todo.title
 
-                            CardStackList(
-                                items = listOf(
-                                    CardStackListItem(
-                                        title = stringResource(id = R.string.completed),
-                                        onClick = {
-                                            onClick(!todo.completed)
-                                        },
-                                        trailingContent = {
-                                            Switch(
-                                                checked = todo.completed,
-                                                onCheckedChange = onClick
+                AppBottomSheet(
+                    title = sheetTitle,
+                    onDismiss = {
+                        showBottomSheet = false
+                    },
+                    sheetState = bottomSheetState
+                ) {
+                    item {
+                        val onClick = { completed: Boolean ->
+                            todo = todo.copy(completed = completed)
+                        }
+
+                        CardStackList(
+                            items = listOf(
+                                CardStackListItem(
+                                    title = stringResource(id = R.string.completed),
+                                    onClick = {
+                                        onClick(!todo.completed)
+                                    },
+                                    trailingContent = {
+                                        Switch(
+                                            checked = todo.completed,
+                                            onCheckedChange = onClick
+                                        )
+                                    }
+                                )
+                            )
+                        )
+                    }
+
+                    item {
+                        CardStackList(
+                            items = listOf(
+                                CardStackListItem(
+                                    title = stringResource(
+                                        id = R.string.edited_at,
+                                        OffsetDateTime.parse(todo.updatedAt)
+                                            .format(
+                                                DateTimeFormatter.ofPattern("dd EEE yyyy HH:mm")
                                             )
-                                        }
-                                    )
-                                )
-                            )
-
-                        }
-
-                        item {
-                            CardStackList(
-                                items = listOf(
-                                    CardStackListItem(
-                                        title = stringResource(
-                                            id = R.string.edited_at,
-                                            OffsetDateTime.parse(todo.updatedAt)
-                                                .format(
-                                                    DateTimeFormatter.ofPattern("dd EEE yyyy HH:mm")
-                                                )
-                                        ),
-                                        leadingContent = {
-                                            Icon(icon = Icons.Default.Update)
-                                        }
                                     ),
-                                    CardStackListItem(
-                                        title = stringResource(id = R.string.delete),
-                                        onClick = {
-                                            scope.launch {
-                                                bottomSheetState.hide()
-                                            }.invokeOnCompletion {
-                                                showBottomSheet = false
-                                                showDeleteNoteSheet = true
-                                            }
-                                        },
-                                        leadingContent = {
-                                            Icon(icon = Icons.Default.Delete)
+                                    leadingContent = {
+                                        Icon(icon = Icons.Default.Update)
+                                    }
+                                ),
+                                CardStackListItem(
+                                    title = stringResource(id = R.string.delete),
+                                    onClick = {
+                                        scope.launch {
+                                            bottomSheetState.hide()
+                                        }.invokeOnCompletion {
+                                            showBottomSheet = false
+                                            showDeleteNoteSheet = true
                                         }
-                                    )
+                                    },
+                                    leadingContent = {
+                                        Icon(icon = Icons.Default.Delete)
+                                    }
                                 )
                             )
-                        }
+                        )
                     }
                 }
             }
@@ -296,68 +294,41 @@ fun DeleteNoteSheet(
 
     val sheetState = rememberModalBottomSheetState()
 
-    ModalBottomSheet(
+    AppBottomSheet(
+        title = stringResource(id = R.string.delete_note),
+        description = stringResource(id = R.string.delete_note_desc),
+        onDismiss = onDismiss,
         sheetState = sheetState,
-        onDismissRequest = onDismiss
-    ) {
-        AppLazyColumn(contentPadding = PaddingValues(all = 16.dp), fill = false) {
-            item {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(space = 8.dp)
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.delete_note),
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    )
-
-                    Text(
-                        text = stringResource(id = R.string.delete_note_desc),
-                        style = MaterialTheme.typography.bodyLarge,
-                    )
+        actions = {
+            TextButton(
+                onClick = {
+                    scope.launch {
+                        sheetState.hide()
+                    }.invokeOnCompletion {
+                        onDismiss()
+                    }
                 }
+            ) {
+                Text(text = stringResource(id = R.string.cancel))
             }
 
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(
-                        space = 8.dp,
-                        alignment = Alignment.End
-                    )
-                ) {
-                    TextButton(
-                        onClick = {
-                            scope.launch {
-                                sheetState.hide()
-                            }.invokeOnCompletion {
-                                onDismiss()
-                            }
+            Button(
+                enabled = !isLoading,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError
+                ),
+                onClick = {
+                    scope.launch {
+                        if (onDelete()) {
+                            sheetState.hide()
+                            onDismiss()
                         }
-                    ) {
-                        Text(text = stringResource(id = R.string.cancel))
-                    }
-
-                    Button(
-                        enabled = !isLoading,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error,
-                            contentColor = MaterialTheme.colorScheme.onError
-                        ),
-                        onClick = {
-                            scope.launch {
-                                if (onDelete()) {
-                                    sheetState.hide()
-                                    onDismiss()
-                                }
-                            }
-                        }
-                    ) {
-                        Text(text = stringResource(id = R.string.delete))
                     }
                 }
+            ) {
+                Text(text = stringResource(id = R.string.delete))
             }
         }
-    }
+    )
 }

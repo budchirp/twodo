@@ -1,4 +1,4 @@
-package dev.cankolay.twodo.android.presentation.composable
+package dev.cankolay.twodo.android.presentation.composable.app
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -83,7 +83,7 @@ fun ListItem(
                     )
                 }
 
-                Text(text = title, style = MaterialTheme.typography.titleMedium, maxLines = 1)
+                Text(text = title, style = MaterialTheme.typography.titleMedium, maxLines = 2)
 
                 if (!description.isNullOrEmpty()) {
                     Text(

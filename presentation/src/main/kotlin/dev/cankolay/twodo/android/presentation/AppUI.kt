@@ -6,7 +6,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.cankolay.twodo.android.presentation.composable.layout.AppMainLayout
+import dev.cankolay.twodo.android.presentation.composable.app.layout.AppMainLayout
 import dev.cankolay.twodo.android.presentation.composition.ProvideNavBackStack
 import dev.cankolay.twodo.android.presentation.composition.ProvideSnackbarHostState
 import dev.cankolay.twodo.android.presentation.navigation.AppNavigation
