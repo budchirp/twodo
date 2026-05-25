@@ -28,7 +28,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.materialkolor.hct.Hct
 import com.materialkolor.rememberDynamicColorScheme
 import dev.cankolay.twodo.android.domain.model.application.MaterialYou
@@ -49,7 +49,6 @@ import dev.cankolay.twodo.android.presentation.composable.layout.AppLayout
 import dev.cankolay.twodo.android.presentation.composable.layout.AppLazyColumn
 import dev.cankolay.twodo.android.presentation.navigation.route.Route
 import dev.cankolay.twodo.android.presentation.theme.isDark
-import dev.cankolay.twodo.android.presentation.viewmodel.application.SettingsEvent
 import dev.cankolay.twodo.android.presentation.viewmodel.application.SettingsViewModel
 
 private val ColorList =
@@ -58,18 +57,16 @@ private val ColorList =
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MaterialYouView(settingsViewModel: SettingsViewModel = hiltViewModel()) {
-    val state by settingsViewModel.state.collectAsState()
+    val uiState by settingsViewModel.uiState.collectAsStateWithLifecycle()
 
     AppLayout(route = Route.MaterialYou) {
-        state?.let { state ->
+        uiState.settingsState?.let { state ->
             AppLazyColumn {
                 item {
                     val onClick = { materialYou: Boolean ->
-                        settingsViewModel.onEvent(
-                            event = SettingsEvent.UpdateSettings(
-                                settingsState = state.copy(
-                                    materialYou = if (materialYou) MaterialYou.SEED(color = ColorList.first()) else MaterialYou.OFF
-                                )
+                        settingsViewModel.updateSettings(
+                            state.copy(
+                                materialYou = if (materialYou) MaterialYou.SEED(color = ColorList.first()) else MaterialYou.OFF
                             )
                         )
                     }
@@ -122,12 +119,10 @@ fun MaterialYouView(settingsViewModel: SettingsViewModel = hiltViewModel()) {
                                     ) == index,
                                     color = ColorList[index],
                                     onClick = {
-                                        settingsViewModel.onEvent(
-                                            SettingsEvent.UpdateSettings(
-                                                settingsState = state.copy(
-                                                    materialYou = MaterialYou.SEED(
-                                                        color = ColorList[index]
-                                                    )
+                                        settingsViewModel.updateSettings(
+                                            state.copy(
+                                                materialYou = MaterialYou.SEED(
+                                                    color = ColorList[index]
                                                 )
                                             )
                                         )
@@ -153,12 +148,10 @@ fun MaterialYouView(settingsViewModel: SettingsViewModel = hiltViewModel()) {
 
                 item {
                     val onClick = { useWallpaperColors: Boolean ->
-                        settingsViewModel.onEvent(
-                            event = SettingsEvent.UpdateSettings(
-                                settingsState = state.copy(
-                                    materialYou = if (useWallpaperColors) MaterialYou.WALLPAPER else MaterialYou.SEED(
-                                        color = ColorList.first()
-                                    )
+                        settingsViewModel.updateSettings(
+                            state.copy(
+                                materialYou = if (useWallpaperColors) MaterialYou.WALLPAPER else MaterialYou.SEED(
+                                    color = ColorList.first()
                                 )
                             )
                         )

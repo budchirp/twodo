@@ -8,57 +8,58 @@ import dev.cankolay.twodo.android.domain.model.application.AuthState
 import dev.cankolay.twodo.android.domain.usecase.api.user.InitializeUserUseCase
 import dev.cankolay.twodo.android.domain.usecase.application.auth.GetAuthStateUseCase
 import dev.cankolay.twodo.android.domain.usecase.application.auth.UpdateAuthStateUseCase
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-sealed class AuthEvent {
-    data class Authenticate(val token: String) : AuthEvent()
-    object Logout : AuthEvent()
-}
+data class AuthUiState(
+    val authState: AuthState? = null,
+    val isAuthenticating: Boolean = false
+)
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val getAuthStateUseCase: GetAuthStateUseCase,
+    getAuthStateUseCase: GetAuthStateUseCase,
     private val updateAuthStateUseCase: UpdateAuthStateUseCase,
     private val initializeUserUseCase: InitializeUserUseCase
 ) : ViewModel() {
-    val state = getAuthStateUseCase()
-        .stateIn(
-            viewModelScope,
-            started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000),
-            initialValue = null
-        )
+    private val _uiState = MutableStateFlow(AuthUiState())
+    val uiState = _uiState.asStateFlow()
 
-    fun onEvent(event: AuthEvent) {
+    init {
         viewModelScope.launch {
-            when (event) {
-                is AuthEvent.Authenticate -> {
-                    updateAuthStateUseCase(
-                        state = AuthState(
-                            token = event.token
-                        )
-                    )
-
-                    initializeUserUseCase()
-                }
-
-                is AuthEvent.Logout -> {
-                    updateAuthStateUseCase(
-                        state = AuthState(
-                            token = ""
-                        )
-                    )
-                }
+            getAuthStateUseCase().collect { authState ->
+                _uiState.update { it.copy(authState = authState) }
             }
         }
     }
 
     fun authenticate(uri: Uri) {
-        val token = uri.getQueryParameter("token")
-        token?.let { token ->
-            onEvent(event = AuthEvent.Authenticate(token = token))
+        val token = uri.getQueryParameter("token") ?: return
+
+        viewModelScope.launch {
+            authenticate(token = token)
+        }
+    }
+
+    suspend fun authenticate(token: String): Boolean {
+        _uiState.update { it.copy(isAuthenticating = true) }
+
+        return try {
+            updateAuthStateUseCase(state = AuthState(token = token))
+            initializeUserUseCase()
+            true
+        } finally {
+            _uiState.update { it.copy(isAuthenticating = false) }
+        }
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isAuthenticating = false) }
+            updateAuthStateUseCase(state = AuthState(token = ""))
         }
     }
 }

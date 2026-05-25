@@ -11,21 +11,18 @@ import dev.cankolay.twodo.android.domain.usecase.api.note.GetNoteUseCase
 import dev.cankolay.twodo.android.domain.usecase.api.note.GetNotesUseCase
 import dev.cankolay.twodo.android.domain.usecase.api.note.UpdateNoteUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-sealed class TodoEvent {
-    data class CreateTodo(val title: String) : TodoEvent()
-
-    object FetchTodos : TodoEvent()
-    data class FetchTodo(val id: String) : TodoEvent()
-
-    data class UpdateTodo(val id: String, val note: Note) : TodoEvent()
-
-    data class DeleteTodo(val id: String) : TodoEvent()
-}
+data class NoteUiState(
+    val notes: List<Note>? = null,
+    val note: Note? = null,
+    val isLoading: Boolean = false,
+    val isSaving: Boolean = false,
+    val error: String? = null
+)
 
 @HiltViewModel
 class NoteViewModel @Inject constructor(
@@ -35,81 +32,118 @@ class NoteViewModel @Inject constructor(
     private val updateNoteUseCase: UpdateNoteUseCase,
     private val deleteNoteUseCase: DeleteNoteUseCase
 ) : ViewModel() {
-    private val _notes = MutableStateFlow<List<Note>?>(value = null)
-    val notes = _notes.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000),
-        initialValue = null
-    )
+    private val _uiState = MutableStateFlow(NoteUiState())
+    val uiState = _uiState.asStateFlow()
 
-    private val _note = MutableStateFlow<Note?>(value = null)
-    val todo = _note.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000),
-        initialValue = null
-    )
-
-    private val _error = MutableStateFlow<String?>(value = null)
-    val error = _error.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000),
-        initialValue = null
-    )
-
-    fun onEvent(event: TodoEvent) {
-        _error.value = null
-
+    fun fetchNotes() {
         viewModelScope.launch {
-            when (event) {
-                is TodoEvent.CreateTodo -> {
-                    when (val result = createNoteUseCase(title = event.title)) {
-                        is ApiResult.Error -> _error.value = result.message
-                        is ApiResult.Success -> {
-                            _note.value = result.data
-                        }
+            _uiState.update { it.copy(isLoading = true, error = null) }
 
-                        else -> {}
-                    }
-
-                    onEvent(event = TodoEvent.FetchTodos)
+            when (val result = getNotesUseCase()) {
+                is ApiResult.Error -> _uiState.update { it.copy(error = result.message) }
+                is ApiResult.Fatal -> _uiState.update {
+                    it.copy(error = result.exception.messageOrDefault())
                 }
 
-                is TodoEvent.FetchTodos -> {
-                    when (val result = getNotesUseCase()) {
-                        is ApiResult.Error -> _error.value = result.message
-                        is ApiResult.Success -> {
-                            _notes.value = result.data
-                        }
-
-                        else -> {}
-                    }
-                }
-
-                is TodoEvent.FetchTodo -> {
-                    when (val result = getNoteUseCase(id = event.id)) {
-                        is ApiResult.Error -> _error.value = result.message
-                        is ApiResult.Success -> {
-                            _note.value = result.data
-                        }
-
-                        else -> {}
-                    }
-                }
-
-                is TodoEvent.UpdateTodo -> {
-                    when (val result = updateNoteUseCase(id = event.id, note = event.note)) {
-                        is ApiResult.Error -> _error.value = result.message
-                        else -> {}
-                    }
-                }
-
-                is TodoEvent.DeleteTodo -> {
-                    when (val result = deleteNoteUseCase(id = event.id)) {
-                        is ApiResult.Error -> _error.value = result.message
-                        else -> {}
-                    }
-                }
+                is ApiResult.Success -> _uiState.update { it.copy(notes = result.data) }
+                else -> Unit
             }
+
+            _uiState.update { it.copy(isLoading = false) }
         }
     }
+
+    fun fetchNote(id: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+
+            when (val result = getNoteUseCase(id = id)) {
+                is ApiResult.Error -> _uiState.update { it.copy(error = result.message) }
+                is ApiResult.Fatal -> _uiState.update {
+                    it.copy(error = result.exception.messageOrDefault())
+                }
+
+                is ApiResult.Success -> _uiState.update { it.copy(note = result.data) }
+                else -> Unit
+            }
+
+            _uiState.update { it.copy(isLoading = false) }
+        }
+    }
+
+    suspend fun createNote(title: String): ApiResult<Note> {
+        _uiState.update { it.copy(isLoading = true, error = null) }
+
+        val result = createNoteUseCase(title = title)
+        when (result) {
+            is ApiResult.Error -> _uiState.update { it.copy(error = result.message) }
+            is ApiResult.Fatal -> _uiState.update {
+                it.copy(error = result.exception.messageOrDefault())
+            }
+
+            is ApiResult.Success -> _uiState.update { state ->
+                state.copy(
+                    notes = state.notes.orEmpty() + result.data,
+                    note = result.data
+                )
+            }
+
+            else -> Unit
+        }
+
+        _uiState.update { it.copy(isLoading = false) }
+        return result
+    }
+
+    suspend fun updateNote(id: String, note: Note): ApiResult<Note> {
+        _uiState.update { it.copy(isSaving = true, error = null) }
+
+        val result = updateNoteUseCase(id = id, note = note)
+        when (result) {
+            is ApiResult.Error -> _uiState.update { it.copy(error = result.message) }
+            is ApiResult.Fatal -> _uiState.update {
+                it.copy(error = result.exception.messageOrDefault())
+            }
+
+            is ApiResult.Success -> _uiState.update { state ->
+                state.copy(
+                    notes = state.notes?.map { item ->
+                        if (item.id == id) result.data else item
+                    }
+                )
+            }
+
+            else -> Unit
+        }
+
+        _uiState.update { it.copy(isSaving = false) }
+        return result
+    }
+
+    suspend fun deleteNote(id: String): ApiResult<Nothing?> {
+        _uiState.update { it.copy(isLoading = true, error = null) }
+
+        val result = deleteNoteUseCase(id = id)
+        when (result) {
+            is ApiResult.Error -> _uiState.update { it.copy(error = result.message) }
+            is ApiResult.Fatal -> _uiState.update {
+                it.copy(error = result.exception.messageOrDefault())
+            }
+
+            is ApiResult.Success -> _uiState.update { state ->
+                state.copy(
+                    notes = state.notes?.filterNot { it.id == id },
+                    note = null
+                )
+            }
+
+            else -> Unit
+        }
+
+        _uiState.update { it.copy(isLoading = false) }
+        return result
+    }
 }
+
+private fun Throwable.messageOrDefault() =
+    localizedMessage ?: message ?: "Unexpected error"

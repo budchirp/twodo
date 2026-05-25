@@ -6,34 +6,35 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.cankolay.twodo.android.domain.model.application.SettingsState
 import dev.cankolay.twodo.android.domain.usecase.application.settings.GetSettingsStateUseCase
 import dev.cankolay.twodo.android.domain.usecase.application.settings.UpdateSettingsStateUseCase
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-sealed class SettingsEvent {
-    data class UpdateSettings(val settingsState: SettingsState) : SettingsEvent()
-}
+data class SettingsUiState(
+    val settingsState: SettingsState? = null
+)
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     getSettingsStateUseCase: GetSettingsStateUseCase,
     private val updateSettingsStateUseCase: UpdateSettingsStateUseCase
 ) : ViewModel() {
-    val state = getSettingsStateUseCase()
-        .stateIn(
-            viewModelScope,
-            started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000),
-            initialValue = null
-        )
+    private val _uiState = MutableStateFlow(SettingsUiState())
+    val uiState = _uiState.asStateFlow()
 
-    fun onEvent(event: SettingsEvent) {
+    init {
         viewModelScope.launch {
-            when (event) {
-                is SettingsEvent.UpdateSettings -> {
-                    updateSettingsStateUseCase(event.settingsState)
-                }
+            getSettingsStateUseCase().collect { settingsState ->
+                _uiState.update { it.copy(settingsState = settingsState) }
             }
+        }
+    }
+
+    fun updateSettings(settingsState: SettingsState) {
+        viewModelScope.launch {
+            updateSettingsStateUseCase(settingsState)
         }
     }
 }

@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
@@ -57,7 +59,9 @@ fun ListItem(
                     ),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    leadingContent()
+                    CompositionLocalProvider(value = LocalContentColor provides MaterialTheme.colorScheme.primary) {
+                        leadingContent()
+                    }
                 }
             }
 

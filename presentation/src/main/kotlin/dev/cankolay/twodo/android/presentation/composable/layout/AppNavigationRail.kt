@@ -21,6 +21,8 @@ import dev.cankolay.twodo.android.presentation.navigation.route.navigationRoutes
 @Composable
 fun AppNavigationRail() {
     val navBackStack = LocalNavBackStack.current
+    val route = navBackStack.lastOrNull() ?: Route.Notes
+    if (navigationRoutes.none { it == route }) return
 
     NavigationRail(
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow
@@ -35,7 +37,7 @@ fun AppNavigationRail() {
             navigationRoutes.forEach { route ->
                 val details = route.getDetails()
 
-                val isSelected = (navBackStack.lastOrNull() ?: Route.Notes) == route
+                val isSelected = navBackStack.lastOrNull() == route
 
                 NavigationRailItem(
                     selected = isSelected,

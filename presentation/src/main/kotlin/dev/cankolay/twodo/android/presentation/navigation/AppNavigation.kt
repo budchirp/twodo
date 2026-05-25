@@ -9,12 +9,12 @@ import dev.cankolay.twodo.android.presentation.composition.LocalNavBackStack
 import dev.cankolay.twodo.android.presentation.motion.TransitionType
 import dev.cankolay.twodo.android.presentation.motion.navigationTransition
 import dev.cankolay.twodo.android.presentation.navigation.route.Route
+import dev.cankolay.twodo.android.presentation.view.CoupleSetupView
 import dev.cankolay.twodo.android.presentation.view.WelcomeView
 import dev.cankolay.twodo.android.presentation.view.note.NoteView
 import dev.cankolay.twodo.android.presentation.view.note.NotesView
 import dev.cankolay.twodo.android.presentation.view.settings.AboutView
 import dev.cankolay.twodo.android.presentation.view.settings.CoupleView
-import dev.cankolay.twodo.android.presentation.view.settings.InvitesView
 import dev.cankolay.twodo.android.presentation.view.settings.LanguagesView
 import dev.cankolay.twodo.android.presentation.view.settings.SettingsView
 import dev.cankolay.twodo.android.presentation.view.settings.appearance.AppearanceView
@@ -39,6 +39,10 @@ fun AppNavigation() {
                 WelcomeView()
             }
 
+            entry<Route.CoupleSetup>(metadata = navigationTransition()) {
+                CoupleSetupView()
+            }
+
             entry<Route.Notes>(metadata = navigationTransition(type = TransitionType.FADE)) {
                 NotesView()
             }
@@ -55,10 +59,6 @@ fun AppNavigation() {
 
             entry<Route.Couple>(metadata = navigationTransition()) {
                 CoupleView()
-            }
-
-            entry<Route.Invites>(metadata = navigationTransition()) {
-                InvitesView()
             }
 
             entry<Route.Languages>(metadata = navigationTransition()) {

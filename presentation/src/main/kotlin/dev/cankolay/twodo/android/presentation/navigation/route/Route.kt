@@ -5,7 +5,6 @@ import androidx.compose.material.icons.filled.Colorize
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Translate
@@ -25,6 +24,9 @@ sealed interface Route : NavKey {
     data object Welcome : Route
 
     @Serializable
+    data object CoupleSetup : Route
+
+    @Serializable
     data object Notes : Route
 
     @Serializable
@@ -36,9 +38,6 @@ sealed interface Route : NavKey {
 
     @Serializable
     data object Couple : Route
-
-    @Serializable
-    data object Invites : Route
 
     @Serializable
     data object Appearance : Route
@@ -75,18 +74,18 @@ fun NavKey.getDetails(): RouteDetail {
                 outlined = Icons.Outlined.Settings
             )
         ),
+        Route.CoupleSetup to RouteDetail(
+            title = stringResource(id = R.string.couple_setup),
+            description = stringResource(id = R.string.couple_setup_desc),
+            icon = RouteDetailIcon(
+                default = ImageVector.vectorResource(id = R.drawable.partner_heart_24px),
+            )
+        ),
         Route.Couple to RouteDetail(
             title = stringResource(id = R.string.couple),
             description = stringResource(id = R.string.couple),
             icon = RouteDetailIcon(
                 default = ImageVector.vectorResource(id = R.drawable.partner_heart_24px),
-            )
-        ),
-        Route.Invites to RouteDetail(
-            title = stringResource(id = R.string.invites),
-            description = stringResource(id = R.string.invites),
-            icon = RouteDetailIcon(
-                default = Icons.Default.Mail,
             )
         ),
         Route.Appearance to RouteDetail(

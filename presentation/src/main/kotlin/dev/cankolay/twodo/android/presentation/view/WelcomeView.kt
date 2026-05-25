@@ -63,7 +63,7 @@ fun WelcomeView() {
         }
     ) {
         AppLazyColumn(
-            contentPadding = PaddingValues(top = 64.dp),
+            contentPadding = PaddingValues(top = 64.dp, bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(space = 32.dp)
         ) {
             item {
@@ -83,7 +83,7 @@ fun WelcomeView() {
                     Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
                         Text(
                             text = stringResource(id = R.string.welcome),
-                            style = MaterialTheme.typography.headlineLargeEmphasized.copy(
+                            style = MaterialTheme.typography.headlineLarge.copy(
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.SemiBold
                             )

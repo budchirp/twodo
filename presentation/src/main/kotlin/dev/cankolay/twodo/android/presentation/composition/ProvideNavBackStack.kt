@@ -7,25 +7,20 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
-import dev.cankolay.twodo.android.domain.model.application.AuthState
 import dev.cankolay.twodo.android.presentation.navigation.route.Route
 
 val LocalNavBackStack =
     staticCompositionLocalOf<NavBackStack<NavKey>> { error("Not provided") }
 
 @Composable
-fun ProvideNavBackStack(authState: AuthState, content: @Composable () -> Unit) {
-    val navBackStack = rememberNavBackStack(
-        if (authState.token.isNotEmpty()) {
-            Route.Notes
-        } else {
-            Route.Welcome
-        }
-    )
+fun ProvideNavBackStack(startRoute: Route, content: @Composable () -> Unit) {
+    val navBackStack = rememberNavBackStack(startRoute)
 
-    LaunchedEffect(key1 = authState.token) {
-        navBackStack.clear()
-        navBackStack.add(element = if (authState.token.isNotEmpty()) Route.Notes else Route.Welcome)
+    LaunchedEffect(key1 = startRoute) {
+        if (navBackStack.lastOrNull().shouldReplaceWith(route = startRoute)) {
+            navBackStack.clear()
+            navBackStack.add(element = startRoute)
+        }
     }
 
     CompositionLocalProvider(
@@ -34,3 +29,11 @@ fun ProvideNavBackStack(authState: AuthState, content: @Composable () -> Unit) {
         content()
     }
 }
+
+private fun NavKey?.shouldReplaceWith(route: Route) =
+    when (route) {
+        Route.Welcome -> this != Route.Welcome
+        Route.CoupleSetup -> this != Route.CoupleSetup
+        Route.Notes -> this == null || this == Route.Welcome || this == Route.CoupleSetup
+        else -> this != route
+    }

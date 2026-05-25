@@ -14,6 +14,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Update
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.LocalTextStyle
@@ -22,10 +24,10 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,10 +39,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.BasicRichTextEditor
+import dev.cankolay.twodo.android.domain.model.api.ApiResult
 import dev.cankolay.twodo.android.presentation.R
 import dev.cankolay.twodo.android.presentation.composable.CardStackList
 import dev.cankolay.twodo.android.presentation.composable.CardStackListItem
@@ -53,7 +58,6 @@ import dev.cankolay.twodo.android.presentation.composition.LocalNavBackStack
 import dev.cankolay.twodo.android.presentation.composition.LocalSnackbarHostState
 import dev.cankolay.twodo.android.presentation.navigation.route.Route
 import dev.cankolay.twodo.android.presentation.viewmodel.NoteViewModel
-import dev.cankolay.twodo.android.presentation.viewmodel.TodoEvent
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
@@ -68,15 +72,15 @@ fun NoteView(id: String, noteViewModel: NoteViewModel = hiltViewModel()) {
     val snackbarHostState = LocalSnackbarHostState.current
     val navBackStack = LocalNavBackStack.current
 
-    val note by noteViewModel.todo.collectAsState()
-    LaunchedEffect(key1 = Unit) {
-        noteViewModel.onEvent(event = TodoEvent.FetchTodo(id = id))
+    val uiState by noteViewModel.uiState.collectAsStateWithLifecycle()
+    val note = uiState.note
+    LaunchedEffect(key1 = id) {
+        noteViewModel.fetchNote(id = id)
     }
 
-    val error by noteViewModel.error.collectAsState()
-    LaunchedEffect(key1 = error) {
-        error?.let {
-            snackbarHostState.showSnackbar(message = it)
+    LaunchedEffect(key1 = uiState.error) {
+        uiState.error?.let { message ->
+            snackbarHostState.showSnackbar(message = message)
         }
     }
 
@@ -91,7 +95,7 @@ fun NoteView(id: String, noteViewModel: NoteViewModel = hiltViewModel()) {
     note?.let { todo ->
         var todo by remember(key1 = todo.id) { mutableStateOf(value = todo.copy()) }
 
-        LaunchedEffect(key1 = Unit) {
+        LaunchedEffect(key1 = todo.id) {
             snapshotFlow {
                 listOf(todo, state.annotatedString)
             }
@@ -102,12 +106,10 @@ fun NoteView(id: String, noteViewModel: NoteViewModel = hiltViewModel()) {
                         updatedAt = OffsetDateTime.now().toString()
                     )
 
-                    noteViewModel.onEvent(
-                        event = TodoEvent.UpdateTodo(
-                            id = id,
-                            note = todo.copy(
-                                content = state.toMarkdown(),
-                            )
+                    noteViewModel.updateNote(
+                        id = id,
+                        note = todo.copy(
+                            content = state.toMarkdown(),
                         )
                     )
                 }
@@ -116,6 +118,7 @@ fun NoteView(id: String, noteViewModel: NoteViewModel = hiltViewModel()) {
         val scope = rememberCoroutineScope()
 
         var showBottomSheet by remember { mutableStateOf(value = false) }
+        var showDeleteNoteSheet by remember { mutableStateOf(value = false) }
         val bottomSheetState = rememberModalBottomSheetState()
 
         AppLayout(
@@ -241,16 +244,12 @@ fun NoteView(id: String, noteViewModel: NoteViewModel = hiltViewModel()) {
                                     CardStackListItem(
                                         title = stringResource(id = R.string.delete),
                                         onClick = {
-                                            noteViewModel.onEvent(event = TodoEvent.DeleteTodo(id = id))
-
                                             scope.launch {
                                                 bottomSheetState.hide()
                                             }.invokeOnCompletion {
                                                 showBottomSheet = false
+                                                showDeleteNoteSheet = true
                                             }
-
-                                            navBackStack.clear()
-                                            navBackStack.add(element = Route.Notes)
                                         },
                                         leadingContent = {
                                             Icon(icon = Icons.Default.Delete)
@@ -259,6 +258,103 @@ fun NoteView(id: String, noteViewModel: NoteViewModel = hiltViewModel()) {
                                 )
                             )
                         }
+                    }
+                }
+            }
+
+            if (showDeleteNoteSheet) {
+                DeleteNoteSheet(
+                    isLoading = uiState.isLoading,
+                    onDismiss = {
+                        showDeleteNoteSheet = false
+                    },
+                    onDelete = {
+                        when (noteViewModel.deleteNote(id = id)) {
+                            is ApiResult.Success -> {
+                                navBackStack.clear()
+                                navBackStack.add(element = Route.Notes)
+                                true
+                            }
+
+                            else -> false
+                        }
+                    }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DeleteNoteSheet(
+    isLoading: Boolean,
+    onDismiss: () -> Unit,
+    onDelete: suspend () -> Boolean
+) {
+    val scope = rememberCoroutineScope()
+
+    val sheetState = rememberModalBottomSheetState()
+
+    ModalBottomSheet(
+        sheetState = sheetState,
+        onDismissRequest = onDismiss
+    ) {
+        AppLazyColumn(contentPadding = PaddingValues(all = 16.dp), fill = false) {
+            item {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(space = 8.dp)
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.delete_note),
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    )
+
+                    Text(
+                        text = stringResource(id = R.string.delete_note_desc),
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                }
+            }
+
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(
+                        space = 8.dp,
+                        alignment = Alignment.End
+                    )
+                ) {
+                    TextButton(
+                        onClick = {
+                            scope.launch {
+                                sheetState.hide()
+                            }.invokeOnCompletion {
+                                onDismiss()
+                            }
+                        }
+                    ) {
+                        Text(text = stringResource(id = R.string.cancel))
+                    }
+
+                    Button(
+                        enabled = !isLoading,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError
+                        ),
+                        onClick = {
+                            scope.launch {
+                                if (onDelete()) {
+                                    sheetState.hide()
+                                    onDismiss()
+                                }
+                            }
+                        }
+                    ) {
+                        Text(text = stringResource(id = R.string.delete))
                     }
                 }
             }
