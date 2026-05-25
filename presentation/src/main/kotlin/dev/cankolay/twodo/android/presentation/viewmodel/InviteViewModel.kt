@@ -31,12 +31,16 @@ class InviteViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
     fun fetchInvites() {
+        if (_uiState.value.isLoading) return
+
         viewModelScope.launch {
             refreshInvites()
         }
     }
 
     suspend fun createInvite(username: String): ApiResult<Nothing?> {
+        if (_uiState.value.isLoading) return ApiResult.Loading
+
         _uiState.update { it.copy(isLoading = true, error = null) }
 
         val result = createInviteUseCase(username = username)
@@ -55,6 +59,8 @@ class InviteViewModel @Inject constructor(
     }
 
     suspend fun handleInvite(id: String, action: InviteAction): ApiResult<Nothing?> {
+        if (_uiState.value.isLoading) return ApiResult.Loading
+
         _uiState.update { it.copy(isLoading = true, error = null) }
 
         val result = handleInviteUseCase(id = id, action = action)

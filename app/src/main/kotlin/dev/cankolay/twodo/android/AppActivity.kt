@@ -1,5 +1,6 @@
 package dev.cankolay.twodo.android
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.activity.compose.setContent
@@ -21,7 +22,7 @@ import dev.cankolay.twodo.android.presentation.viewmodel.application.SettingsVie
 class AppActivity : AppCompatActivity() {
     private val settingsViewModel by viewModels<SettingsViewModel>()
     private val authViewModel by viewModels<AuthViewModel>()
-    private var appIntent by mutableStateOf<android.content.Intent?>(null)
+    private var appIntent by mutableStateOf<Intent?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,13 +48,18 @@ class AppActivity : AppCompatActivity() {
                 AppUI(
                     intent = intent,
                     settingsViewModel = settingsViewModel,
-                    authViewModel = authViewModel
+                    authViewModel = authViewModel,
+                    onAuthIntentConsumed = {
+                        val cleanIntent = Intent(this@AppActivity.intent).apply { data = null }
+                        setIntent(cleanIntent)
+                        appIntent = cleanIntent
+                    }
                 )
             }
         }
     }
 
-    override fun onNewIntent(intent: android.content.Intent) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
 
         setIntent(intent)

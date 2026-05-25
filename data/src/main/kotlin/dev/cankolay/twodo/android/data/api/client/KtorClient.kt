@@ -38,9 +38,12 @@ constructor(
                 url {
                     protocol = URLProtocol.HTTP
                     host = ApiConstants.API_URL
+                    port = ApiConstants.API_PORT
                 }
 
-                headers.append(name = "Authorization", value = "Bearer ${authState.token}")
+                if (authState.token.isNotBlank()) {
+                    headers.append(name = "Authorization", value = "Bearer ${authState.token}")
+                }
 
                 contentType(type = ContentType.Application.Json)
             }

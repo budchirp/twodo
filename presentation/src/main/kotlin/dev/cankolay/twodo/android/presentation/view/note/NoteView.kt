@@ -269,8 +269,10 @@ fun NoteView(id: String, noteViewModel: NoteViewModel = hiltViewModel()) {
                     onDelete = {
                         when (noteViewModel.deleteNote(id = id)) {
                             is ApiResult.Success -> {
-                                navBackStack.clear()
                                 navBackStack.add(element = Route.Notes)
+                                while (navBackStack.size > 1) {
+                                    navBackStack.removeAt(0)
+                                }
                                 true
                             }
 

@@ -7,6 +7,7 @@ import dev.cankolay.twodo.android.domain.model.api.ApiResult
 import dev.cankolay.twodo.android.domain.model.api.user.User
 import dev.cankolay.twodo.android.domain.usecase.api.couple.LeaveCoupleUseCase
 import dev.cankolay.twodo.android.domain.usecase.api.user.GetUserUseCase
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -16,7 +17,8 @@ import javax.inject.Inject
 data class UserUiState(
     val user: User? = null,
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val isInitialized: Boolean = false
 )
 
 @HiltViewModel
@@ -26,22 +28,37 @@ class UserViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(UserUiState())
     val uiState = _uiState.asStateFlow()
+    private var fetchUserJob: Job? = null
 
     fun fetchUser() {
-        viewModelScope.launch {
+        if (fetchUserJob?.isActive == true) return
+
+        fetchUserJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
             when (val result = getUserUseCase()) {
-                is ApiResult.Error -> _uiState.update { it.copy(error = result.message) }
-                is ApiResult.Fatal -> _uiState.update {
-                    it.copy(error = result.exception.messageOrDefault())
+                is ApiResult.Error -> _uiState.update {
+                    it.copy(
+                        error = result.message,
+                        user = null
+                    )
                 }
 
-                is ApiResult.Success -> _uiState.update { it.copy(user = result.data) }
+                is ApiResult.Fatal -> _uiState.update {
+                    it.copy(error = result.exception.messageOrDefault(), user = null)
+                }
+
+                is ApiResult.Success -> _uiState.update {
+                    it.copy(
+                        user = result.data,
+                        error = null
+                    )
+                }
+
                 else -> Unit
             }
 
-            _uiState.update { it.copy(isLoading = false) }
+            _uiState.update { it.copy(isLoading = false, isInitialized = true) }
         }
     }
 
@@ -67,6 +84,7 @@ class UserViewModel @Inject constructor(
     }
 
     fun clearUser() {
+        fetchUserJob?.cancel()
         _uiState.value = UserUiState()
     }
 }

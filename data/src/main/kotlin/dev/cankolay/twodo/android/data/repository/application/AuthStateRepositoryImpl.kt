@@ -3,6 +3,7 @@ package dev.cankolay.twodo.android.data.repository.application
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import dev.cankolay.twodo.android.data.di.AuthDataStore
 import dev.cankolay.twodo.android.domain.model.application.AuthState
@@ -32,7 +33,7 @@ constructor(
 
     override val state = dataStore.data.catch { exception ->
         if (exception is IOException) {
-            default
+            emit(emptyPreferences())
         } else {
             throw exception
         }

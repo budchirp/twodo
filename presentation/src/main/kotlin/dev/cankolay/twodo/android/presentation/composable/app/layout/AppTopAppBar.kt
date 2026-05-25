@@ -63,7 +63,11 @@ fun AppTopAppBar(
             }) {
             FilledIconButton(
                 colors = IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-                onClick = { navBackStack.removeLastOrNull() }) {
+                onClick = {
+                    if (navBackStack.size > 1) {
+                        navBackStack.removeLastOrNull()
+                    }
+                }) {
                 Icon(
                     icon = Icons.AutoMirrored.Filled.ArrowBack,
                 )

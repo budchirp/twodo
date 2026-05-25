@@ -40,7 +40,9 @@ fun SettingsView(
     val userState by userViewModel.uiState.collectAsStateWithLifecycle()
     val user = userState.user
     LaunchedEffect(key1 = Unit) {
-        userViewModel.fetchUser()
+        if (!userState.isInitialized && !userState.isLoading) {
+            userViewModel.fetchUser()
+        }
     }
 
     val isLoading = userState.isLoading
@@ -57,8 +59,10 @@ fun SettingsView(
                 ProfileCard(user = user, isLoading = isLoading, error = error, onLogout = {
                     authViewModel.logout()
 
-                    navBackStack.clear()
                     navBackStack.add(element = Route.Welcome)
+                    while (navBackStack.size > 1) {
+                        navBackStack.removeAt(0)
+                    }
                 })
             }
 
@@ -132,7 +136,7 @@ fun ProfileCard(user: User?, isLoading: Boolean, error: String?, onLogout: () ->
                         Text(text = stringResource(id = R.string.sign_out))
                     }
                 },
-                contentPadding = PaddingValues(all = 12.dp),
+                contentPadding = PaddingValues(vertical = 12.dp),
                 contentSize = null
             ),
         )

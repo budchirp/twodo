@@ -20,15 +20,22 @@ import dev.cankolay.twodo.android.presentation.view.settings.SettingsView
 import dev.cankolay.twodo.android.presentation.view.settings.appearance.AppearanceView
 import dev.cankolay.twodo.android.presentation.view.settings.appearance.MaterialYouView
 import dev.cankolay.twodo.android.presentation.view.settings.appearance.ThemeView
+import dev.cankolay.twodo.android.presentation.viewmodel.UserViewModel
+import dev.cankolay.twodo.android.presentation.viewmodel.application.AuthViewModel
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(
+    authViewModel: AuthViewModel,
+    userViewModel: UserViewModel
+) {
     val navBackStack = LocalNavBackStack.current
 
     NavDisplay(
         backStack = navBackStack,
         onBack = {
-            navBackStack.removeLastOrNull()
+            if (navBackStack.size > 1) {
+                navBackStack.removeLastOrNull()
+            }
         },
         entryDecorators = listOf(
             rememberSaveableStateHolderNavEntryDecorator(),
@@ -40,7 +47,10 @@ fun AppNavigation() {
             }
 
             entry<Route.CoupleSetup>(metadata = navigationTransition()) {
-                CoupleSetupView()
+                CoupleSetupView(
+                    userViewModel = userViewModel,
+                    authViewModel = authViewModel
+                )
             }
 
             entry<Route.Notes>(metadata = navigationTransition(type = TransitionType.FADE)) {
@@ -54,11 +64,14 @@ fun AppNavigation() {
 
 
             entry<Route.Settings>(metadata = navigationTransition(type = TransitionType.FADE)) {
-                SettingsView()
+                SettingsView(
+                    userViewModel = userViewModel,
+                    authViewModel = authViewModel
+                )
             }
 
             entry<Route.Couple>(metadata = navigationTransition()) {
-                CoupleView()
+                CoupleView(userViewModel = userViewModel)
             }
 
             entry<Route.Languages>(metadata = navigationTransition()) {

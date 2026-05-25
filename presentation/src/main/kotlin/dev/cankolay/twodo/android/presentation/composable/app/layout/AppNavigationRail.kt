@@ -43,11 +43,12 @@ fun AppNavigationRail() {
                     selected = isSelected,
                     onClick = {
                         if (!isSelected) {
-                            navBackStack.clear()
-
                             navBackStack.add(
                                 element = route
                             )
+                            while (navBackStack.size > 1) {
+                                navBackStack.removeAt(0)
+                            }
                         }
                     },
                     icon = {

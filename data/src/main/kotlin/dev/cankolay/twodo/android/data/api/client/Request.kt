@@ -1,5 +1,6 @@
 package dev.cankolay.twodo.android.data.api.client
 
+import dev.cankolay.twodo.android.data.api.model.response.EmptySuccessResponse
 import dev.cankolay.twodo.android.data.api.model.response.ErrorResponse
 import dev.cankolay.twodo.android.data.api.model.response.SuccessResponse
 import dev.cankolay.twodo.android.domain.model.api.ApiResult
@@ -77,7 +78,7 @@ suspend fun request(
 
         val statusCode = response.status.value
         if (statusCode in 200..299) {
-            val body = response.body<SuccessResponse<Nothing?>>()
+            val body = response.body<EmptySuccessResponse>()
             if (body.error) ApiResult.Error(
                 message = body.message,
                 reason = ErrorReason.CLIENT

@@ -79,11 +79,12 @@ fun BoxScope.AppToolbar() {
                         },
                         onClick = {
                             if (!isSelected) {
-                                navBackStack.clear()
-
                                 navBackStack.add(
                                     element = route.instance
                                 )
+                                while (navBackStack.size > 1) {
+                                    navBackStack.removeAt(0)
+                                }
                             }
                         },
                     )

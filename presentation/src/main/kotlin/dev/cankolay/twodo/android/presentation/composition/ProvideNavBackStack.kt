@@ -18,8 +18,10 @@ fun ProvideNavBackStack(startRoute: Route, content: @Composable () -> Unit) {
 
     LaunchedEffect(key1 = startRoute) {
         if (navBackStack.lastOrNull().shouldReplaceWith(route = startRoute)) {
-            navBackStack.clear()
             navBackStack.add(element = startRoute)
+            while (navBackStack.size > 1) {
+                navBackStack.removeAt(0)
+            }
         }
     }
 

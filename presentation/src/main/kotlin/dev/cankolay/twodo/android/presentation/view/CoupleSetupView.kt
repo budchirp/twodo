@@ -66,13 +66,17 @@ fun CoupleSetupView(
     val userState by userViewModel.uiState.collectAsStateWithLifecycle()
     val user = userState.user
     LaunchedEffect(key1 = Unit) {
-        userViewModel.fetchUser()
+        if (!userState.isInitialized && !userState.isLoading) {
+            userViewModel.fetchUser()
+        }
     }
 
     val inviteState by inviteViewModel.uiState.collectAsStateWithLifecycle()
     val invites = inviteState.invites
-    LaunchedEffect(key1 = Unit) {
-        inviteViewModel.fetchInvites()
+    LaunchedEffect(key1 = user?.id) {
+        if (user != null) {
+            inviteViewModel.fetchInvites()
+        }
     }
 
     var showInviteSheet by remember { mutableStateOf(value = false) }
@@ -81,10 +85,12 @@ fun CoupleSetupView(
         route = Route.CoupleSetup,
         title = stringResource(id = R.string.couple_setup_title),
         description = stringResource(id = R.string.couple_setup_desc),
-        isLoading = userState.isLoading,
+        isLoading = userState.isLoading || inviteState.isLoading,
         onRefresh = {
             userViewModel.fetchUser()
-            inviteViewModel.fetchInvites()
+            if (user != null) {
+                inviteViewModel.fetchInvites()
+            }
         },
         actions = {
             OutlinedButton(
@@ -152,7 +158,6 @@ fun CoupleSetupView(
                                             title = invite.user.name,
                                             contentSize = null,
                                             contentPadding = PaddingValues(
-                                                horizontal = 12.dp,
                                                 vertical = 12.dp
                                             ),
                                             trailingContent = {
@@ -169,11 +174,12 @@ fun CoupleSetupView(
                                                                 id = invite.id
                                                             )
                                                         }
-                                                    }) {
+                                                    }, enabled = !inviteState.isLoading) {
                                                         Icon(icon = Icons.Default.Close)
                                                     }
 
                                                     IconButton(
+                                                        enabled = !inviteState.isLoading,
                                                         onClick = {
                                                             scope.launch {
                                                                 val result =
@@ -282,11 +288,13 @@ private fun InvitePartnerSheet(
                     enter = expandVertically(),
                     exit = shrinkVertically()
                 ) {
-                    ErrorCard(
-                        modifier = Modifier.padding(bottom = 8.dp),
-                        title = stringResource(id = R.string.error),
-                        error = error!!
-                    )
+                    error?.let { message ->
+                        ErrorCard(
+                            modifier = Modifier.padding(bottom = 8.dp),
+                            title = stringResource(id = R.string.error),
+                            error = message
+                        )
+                    }
                 }
 
                 TextField(

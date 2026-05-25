@@ -21,7 +21,8 @@ fun AppUI(
     intent: Intent,
     settingsViewModel: SettingsViewModel = hiltViewModel(),
     authViewModel: AuthViewModel = hiltViewModel(),
-    userViewModel: UserViewModel = hiltViewModel()
+    userViewModel: UserViewModel = hiltViewModel(),
+    onAuthIntentConsumed: () -> Unit = {}
 ) {
     val settingsUiState by settingsViewModel.uiState.collectAsStateWithLifecycle()
     val authUiState by authViewModel.uiState.collectAsStateWithLifecycle()
@@ -35,6 +36,7 @@ fun AppUI(
     LaunchedEffect(key1 = uri) {
         uri?.let { uri ->
             authViewModel.authenticate(uri = uri)
+            onAuthIntentConsumed()
         }
     }
 
@@ -48,25 +50,31 @@ fun AppUI(
         when {
             token == null -> Unit
             token.isEmpty() -> userViewModel.clearUser()
-            !authUiState.isAuthenticating && user == null && !userUiState.isLoading && userUiState.error == null ->
+            !authUiState.isAuthenticating && user == null && !userUiState.isLoading && !userUiState.isInitialized ->
                 userViewModel.fetchUser()
         }
     }
 
     if (settingsState != null && authState != null) {
-        // TODO: Random route flash
         val startRoute =
             when {
                 authState.token.isEmpty() -> Route.Welcome
+                authUiState.isAuthenticating -> null
+                user == null && userUiState.error == null -> null
                 user?.couple != null -> Route.Notes
                 else -> Route.CoupleSetup
             }
 
         AppTheme(settingsState = settingsState) {
-            ProvideNavBackStack(startRoute = startRoute) {
-                ProvideSnackbarHostState {
-                    AppMainLayout {
-                        AppNavigation()
+            startRoute?.let { route ->
+                ProvideNavBackStack(startRoute = route) {
+                    ProvideSnackbarHostState {
+                        AppMainLayout {
+                            AppNavigation(
+                                authViewModel = authViewModel,
+                                userViewModel = userViewModel
+                            )
+                        }
                     }
                 }
             }

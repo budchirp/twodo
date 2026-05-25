@@ -67,7 +67,9 @@ fun CoupleView(userViewModel: UserViewModel = hiltViewModel()) {
     val userState by userViewModel.uiState.collectAsStateWithLifecycle()
     val user = userState.user
     LaunchedEffect(key1 = Unit) {
-        userViewModel.fetchUser()
+        if (!userState.isInitialized && !userState.isLoading) {
+            userViewModel.fetchUser()
+        }
     }
 
     val isLoading = userState.isLoading
@@ -111,108 +113,114 @@ fun CoupleView(userViewModel: UserViewModel = hiltViewModel()) {
             }
         }
 
+        val couple = user?.couple
         AnimatedVisibility(
-            visible = user?.couple != null,
+            visible = couple != null,
             enter = fadeIn(),
             exit = fadeOut()
         ) {
-            val user = user!!
-            val couple = user.couple!!
-
-            AppLazyColumn {
-                item {
-                    val first = couple.users.firstOrNull()
-                    val second = couple.users.drop(n = 1).firstOrNull()
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(space = 16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Box(
-                            modifier = Modifier.width(width = 128.dp)
-                        ) {
-                            Avatar(
-                                modifier = Modifier
-                                    .align(Alignment.CenterStart)
-                                    .zIndex(zIndex = 1f),
-                                picture = first?.picture,
-                                color = MaterialTheme.colorScheme.surfaceContainer,
-                                size = 80.dp
-                            )
-
-                            Avatar(
-                                modifier = Modifier
-                                    .align(Alignment.CenterEnd),
-                                picture = second?.picture,
-                                color = MaterialTheme.colorScheme.surfaceContainer,
-                                size = 80.dp
-                            )
-                        }
+            if (couple != null) {
+                AppLazyColumn {
+                    item {
+                        val first = couple.users.firstOrNull()
+                        val second = couple.users.drop(n = 1).firstOrNull()
 
                         Column(
                             modifier = Modifier
-                                .fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(space = 8.dp),
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(space = 16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text(
-                                text = couple.users.joinToString(separator = " & ") { it.name },
-                                textAlign = TextAlign.Center,
-                                style = MaterialTheme.typography.titleLarge.copy(
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.SemiBold
+                            Box(
+                                modifier = Modifier.width(width = 128.dp)
+                            ) {
+                                Avatar(
+                                    modifier = Modifier
+                                        .align(Alignment.CenterStart)
+                                        .zIndex(zIndex = 1f),
+                                    picture = first?.picture,
+                                    color = MaterialTheme.colorScheme.surfaceContainer,
+                                    size = 80.dp
                                 )
-                            )
 
-                            Surface(
-                                color = MaterialTheme.colorScheme.primary,
-                                shape = MaterialTheme.shapes.extraLarge
+                                Avatar(
+                                    modifier = Modifier
+                                        .align(Alignment.CenterEnd),
+                                    picture = second?.picture,
+                                    color = MaterialTheme.colorScheme.surfaceContainer,
+                                    size = 80.dp
+                                )
+                            }
+
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(space = 8.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(
-                                    modifier = Modifier.padding(
-                                        horizontal = 16.dp,
-                                        vertical = 4.dp
-                                    ),
-                                    style = LocalTextStyle.current.copy(fontWeight = FontWeight.Medium),
-                                    text = stringResource(
-                                        id = R.string.days_together,
-                                        ChronoUnit.DAYS.between(
-                                            OffsetDateTime.parse(couple.createdAt),
-                                            OffsetDateTime.now()
-                                        ).toString(),
+                                    text = couple.users.joinToString(separator = " & ") { it.name },
+                                    textAlign = TextAlign.Center,
+                                    style = MaterialTheme.typography.titleLarge.copy(
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.SemiBold
                                     )
                                 )
+
+                                val daysTogether = runCatching {
+                                    ChronoUnit.DAYS.between(
+                                        OffsetDateTime.parse(couple.createdAt),
+                                        OffsetDateTime.now()
+                                    ).toString()
+                                }.getOrDefault(defaultValue = "0")
+
+                                Surface(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    shape = MaterialTheme.shapes.extraLarge
+                                ) {
+                                    Text(
+                                        modifier = Modifier.padding(
+                                            horizontal = 16.dp,
+                                            vertical = 4.dp
+                                        ),
+                                        style = LocalTextStyle.current.copy(fontWeight = FontWeight.Medium),
+                                        text = stringResource(
+                                            id = R.string.days_together,
+                                            daysTogether,
+                                        )
+                                    )
+                                }
                             }
                         }
                     }
-                }
 
-                item {
-                    HorizontalDivider(color = MaterialTheme.colorScheme.surfaceContainer)
-                }
+                    item {
+                        HorizontalDivider(color = MaterialTheme.colorScheme.surfaceContainer)
+                    }
 
-                item {
-                    Button(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                            .fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error,
-                            contentColor = MaterialTheme.colorScheme.onError
-                        ),
-                        onClick = {
-                            showBreakupPartnerSheet = true
-                        }) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(icon = Icons.Default.HeartBroken)
+                    item {
+                        Button(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error,
+                                contentColor = MaterialTheme.colorScheme.onError
+                            ),
+                            onClick = {
+                                showBreakupPartnerSheet = true
+                            }) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(icon = Icons.Default.HeartBroken)
 
-                            Text(text = stringResource(id = R.string.break_up))
+                                Text(
+                                    text = stringResource(id = R.string.break_up)
+                                )
+                            }
                         }
                     }
                 }
@@ -236,8 +244,10 @@ fun CoupleView(userViewModel: UserViewModel = hiltViewModel()) {
                                     Icon(icon = Icons.Default.PersonAdd)
                                 },
                                 onClick = {
-                                    navBackStack.clear()
                                     navBackStack.add(element = Route.CoupleSetup)
+                                    while (navBackStack.size > 1) {
+                                        navBackStack.removeAt(0)
+                                    }
                                 }
                             )
                         )

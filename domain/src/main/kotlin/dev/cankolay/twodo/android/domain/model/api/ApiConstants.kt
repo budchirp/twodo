@@ -1,7 +1,8 @@
 package dev.cankolay.twodo.android.domain.model.api
 
 object ApiConstants {
-    const val API_URL = "192.168.1.13:8081"
+    const val API_URL = "192.168.1.13"
+    const val API_PORT = 8081
 
     object Endpoints {
         const val USER = "user"

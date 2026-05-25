@@ -69,8 +69,8 @@ fun NotesView(noteViewModel: NoteViewModel = hiltViewModel()) {
             isLoading = isLoading,
             onRefresh = { noteViewModel.fetchNotes() },
         ) {
-            when (true) {
-                (error != null && notes == null) -> {
+            when {
+                error != null && notes == null -> {
                     item {
                         ErrorCard(
                             title = stringResource(id = R.string.notes_error),
@@ -81,7 +81,9 @@ fun NotesView(noteViewModel: NoteViewModel = hiltViewModel()) {
                     }
                 }
 
-                notes?.isEmpty() -> {
+                notes == null -> Unit
+
+                notes.isEmpty() -> {
                     item {
                         CardStackList(
                             modifier = Modifier.padding(horizontal = 16.dp),
@@ -103,7 +105,7 @@ fun NotesView(noteViewModel: NoteViewModel = hiltViewModel()) {
                     item {
                         CardStackList(
                             modifier = Modifier.padding(horizontal = 16.dp),
-                            items = notes!!.map { note ->
+                            items = notes.map { note ->
                                 CardStackListItem(
                                     title = note.title,
                                     trailingContent = {
