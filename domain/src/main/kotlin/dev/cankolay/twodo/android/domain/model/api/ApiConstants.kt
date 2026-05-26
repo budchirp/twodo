@@ -5,18 +5,20 @@ object ApiConstants {
     const val API_PORT = 8081
 
     object Endpoints {
-        const val USER = "user"
+        const val SERVER_HEALTH = "server/health"
+        const val SERVER_VERSION = "server/version"
 
-        const val INITIALIZE = "$USER/initialize"
+        const val USERS = "users"
+        const val USER_ME = "$USERS/me"
+        const val INITIALIZE = "$USERS/initialize"
 
-        const val COUPLE = "couple"
-        const val COUPLE_LEAVE = "$COUPLE/leave"
-        
-        const val INVITE = "$USER/invite"
-        const val INVITES = "$INVITE/all"
+        const val COUPLES = "couples"
+        const val COUPLE_ME = "$COUPLES/me"
+        const val COUPLE_LEAVE = "$COUPLES/leave"
 
-        const val TODO = "todo"
-        const val TODOS = "$TODO/all"
+        const val INVITES = "invites"
+
+        const val NOTES = "notes"
     }
 }
 

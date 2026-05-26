@@ -20,7 +20,6 @@ import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -90,23 +89,23 @@ fun NoteView(id: String, noteViewModel: NoteViewModel = hiltViewModel()) {
         state.selection = TextRange(index = 0)
     }
 
-    note?.let { todo ->
-        var todo by remember(key1 = todo.id) { mutableStateOf(value = todo.copy()) }
+    note?.let { loadedNote ->
+        var noteDraft by remember(key1 = loadedNote.id) { mutableStateOf(value = loadedNote.copy()) }
 
-        LaunchedEffect(key1 = todo.id) {
+        LaunchedEffect(key1 = noteDraft.id) {
             snapshotFlow {
-                listOf(todo, state.annotatedString)
+                listOf(noteDraft, state.annotatedString)
             }
                 .debounce(500)
                 .distinctUntilChanged()
                 .collectLatest {
-                    todo = todo.copy(
+                    noteDraft = noteDraft.copy(
                         updatedAt = OffsetDateTime.now().toString()
                     )
 
                     noteViewModel.updateNote(
                         id = id,
-                        note = todo.copy(
+                        note = noteDraft.copy(
                             content = state.toMarkdown(),
                         )
                     )
@@ -132,8 +131,8 @@ fun NoteView(id: String, noteViewModel: NoteViewModel = hiltViewModel()) {
                     context = context,
                     title = {
                         BasicTextField(
-                            value = todo.title,
-                            onValueChange = { title -> todo = todo.copy(title = title) },
+                            value = noteDraft.title,
+                            onValueChange = { title -> noteDraft = noteDraft.copy(title = title) },
                             textStyle = LocalTextStyle.current.copy(
                                 color = MaterialTheme.colorScheme.onSurface
                             ),
@@ -193,7 +192,7 @@ fun NoteView(id: String, noteViewModel: NoteViewModel = hiltViewModel()) {
 
             if (showBottomSheet) {
                 val sheetTitle =
-                    if (todo.title.isBlank()) stringResource(id = R.string.notes) else todo.title
+                    if (noteDraft.title.isBlank()) stringResource(id = R.string.notes) else noteDraft.title
 
                 AppBottomSheet(
                     title = sheetTitle,
@@ -203,35 +202,12 @@ fun NoteView(id: String, noteViewModel: NoteViewModel = hiltViewModel()) {
                     sheetState = bottomSheetState
                 ) {
                     item {
-                        val onClick = { completed: Boolean ->
-                            todo = todo.copy(completed = completed)
-                        }
-
-                        CardStackList(
-                            items = listOf(
-                                CardStackListItem(
-                                    title = stringResource(id = R.string.completed),
-                                    onClick = {
-                                        onClick(!todo.completed)
-                                    },
-                                    trailingContent = {
-                                        Switch(
-                                            checked = todo.completed,
-                                            onCheckedChange = onClick
-                                        )
-                                    }
-                                )
-                            )
-                        )
-                    }
-
-                    item {
                         CardStackList(
                             items = listOf(
                                 CardStackListItem(
                                     title = stringResource(
                                         id = R.string.edited_at,
-                                        OffsetDateTime.parse(todo.updatedAt)
+                                        OffsetDateTime.parse(noteDraft.updatedAt)
                                             .format(
                                                 DateTimeFormatter.ofPattern("dd EEE yyyy HH:mm")
                                             )

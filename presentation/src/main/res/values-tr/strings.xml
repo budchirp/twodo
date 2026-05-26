@@ -48,7 +48,6 @@
     <string name="reject">Reddet</string>
     <string name="accepted">Onaylandı</string>
     <string name="rejected">Reddedildi</string>
-    <string name="completed">Tamamlandı</string>
     <string name="pending">Bekliyor</string>
     <string name="title">Başlık</string>
     <string name="create">Oluştur</string>
@@ -59,14 +58,14 @@
     <string name="username">Kullanıcı adı</string>
     <string name="invite">Davet et</string>
     <string name="welcome">TwoDo\'ya Hoşgeldiniz</string>
-    <string name="welcome_desc">Çiftler için yapılacaklar listesi uygulaması</string>
+    <string name="welcome_desc">Birlikte taşımak istediğiniz notlar için küçük bir ortak alan.</string>
     <string name="loading">Yükleniyor</string>
     <string name="feature_1">Çift olarak planlayın</string>
-    <string name="feature_1_desc">Görevleri birlikte oluşturun, düzenleyin ve tamamlayın</string>
+    <string name="feature_1_desc">Ortak notları birlikte oluşturun ve düzenleyin</string>
     <string name="feature_2">Uyumlu kalın</string>
-    <string name="feature_2_desc">Ne yapılması gerektiğini sormadan görün</string>
+    <string name="feature_2_desc">Ortak düşünceleri tek yerde tutun</string>
     <string name="feature_3">Küçük şeyler önemlidir</string>
-    <string name="feature_3_desc">Günlük işleri birbirinize özen göstermeye dönüştürün</string>
+    <string name="feature_3_desc">Birlikte hatırlamak istediğiniz küçük şeyleri saklayın</string>
     <string name="notes_error">Notlarınız alınamadı</string>
     <string name="notes_empty_title">Henüz not yok</string>
     <string name="notes_empty_desc">Bir şey çıktığında ilk ortak notu oluşturun.</string>

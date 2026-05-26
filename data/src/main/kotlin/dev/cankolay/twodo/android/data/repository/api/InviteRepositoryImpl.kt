@@ -13,13 +13,26 @@ class InviteRepositoryImpl
 constructor(val inviteService: InviteService) : InviteRepository {
     override suspend fun create(
         username: String
-    ) = inviteService.create(dto = CreateInviteRequestDto(username = username))
+    ) = when (val result =
+        inviteService.create(dto = CreateInviteRequestDto(username = username))) {
+        is ApiResult.Success -> ApiResult.Success(
+            message = result.message,
+            data = null,
+            code = result.code
+        )
+
+        is ApiResult.Loading -> result
+
+        is ApiResult.Error -> result
+        is ApiResult.Fatal -> result
+    }
 
     override suspend fun getAll() =
         when (val result = inviteService.getAll()) {
             is ApiResult.Success -> ApiResult.Success(
                 message = result.message,
-                data = result.data.map { it.toDomain() }
+                data = result.data.map { it.toDomain() },
+                code = result.code
             )
 
             is ApiResult.Loading -> result

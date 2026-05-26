@@ -8,11 +8,16 @@ enum class ErrorReason {
 sealed class ApiResult<out T> {
     data class Success<out T>(
         val message: String,
-        val data: T
+        val data: T,
+        val code: String = "success"
     ) :
         ApiResult<T>()
 
-    data class Error(val message: String, val reason: ErrorReason) : ApiResult<Nothing>()
+    data class Error(
+        val message: String,
+        val reason: ErrorReason,
+        val code: String = "unknown"
+    ) : ApiResult<Nothing>()
 
     data class Fatal(val exception: Throwable) : ApiResult<Nothing>()
 

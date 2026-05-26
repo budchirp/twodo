@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -75,9 +74,7 @@ fun NotesView(noteViewModel: NoteViewModel = hiltViewModel()) {
                         ErrorCard(
                             title = stringResource(id = R.string.notes_error),
                             error = error,
-                            onRefresh = {
-                                noteViewModel.fetchNotes()
-                            })
+                            onRefresh = { noteViewModel.fetchNotes() })
                     }
                 }
 
@@ -108,11 +105,6 @@ fun NotesView(noteViewModel: NoteViewModel = hiltViewModel()) {
                             items = notes.map { note ->
                                 CardStackListItem(
                                     title = note.title,
-                                    trailingContent = {
-                                        if (note.completed) Icon(
-                                            icon = Icons.Default.Check,
-                                        )
-                                    },
                                     onClick = {
                                         navBackStack.add(element = Route.Note(id = note.id))
                                     }

@@ -6,12 +6,15 @@ import kotlinx.serialization.json.JsonElement
 @Serializable
 data class ErrorResponse(
     val error: Boolean,
-    val message: String
+    val code: String = "unknown",
+    val message: String,
+    val data: JsonElement? = null
 )
 
 @Serializable
 data class SuccessResponse<T>(
     val error: Boolean,
+    val code: String = "success",
     val message: String,
     val data: T
 )
@@ -19,6 +22,7 @@ data class SuccessResponse<T>(
 @Serializable
 data class EmptySuccessResponse(
     val error: Boolean,
+    val code: String = "success",
     val message: String,
     val data: JsonElement? = null
 )

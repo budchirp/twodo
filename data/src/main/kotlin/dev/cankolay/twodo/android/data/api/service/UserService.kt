@@ -10,7 +10,7 @@ import io.ktor.http.path
 import javax.inject.Inject
 
 class UserService @Inject constructor(private val client: KtorClient) {
-    suspend fun initialize() = request(no_return = true) {
+    suspend fun initialize() = request<UserDto> {
         client().post {
             url {
                 path(ApiConstants.Endpoints.INITIALIZE)
@@ -21,7 +21,7 @@ class UserService @Inject constructor(private val client: KtorClient) {
     suspend fun get() = request<UserDto> {
         client().get {
             url {
-                path(ApiConstants.Endpoints.USER)
+                path(ApiConstants.Endpoints.USER_ME)
             }
         }
     }

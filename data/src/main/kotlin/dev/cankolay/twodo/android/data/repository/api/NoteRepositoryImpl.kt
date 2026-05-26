@@ -1,22 +1,28 @@
 package dev.cankolay.twodo.android.data.repository.api
 
-import dev.cankolay.twodo.android.data.api.model.request.todo.CreateTodoRequestDto
-import dev.cankolay.twodo.android.data.api.model.request.todo.UpdateTodoRequestDto
-import dev.cankolay.twodo.android.data.api.model.response.todo.toDomain
-import dev.cankolay.twodo.android.data.api.service.TodoService
+import dev.cankolay.twodo.android.data.api.model.request.note.CreateNoteRequestDto
+import dev.cankolay.twodo.android.data.api.model.request.note.UpdateNoteRequestDto
+import dev.cankolay.twodo.android.data.api.model.response.note.toDomain
+import dev.cankolay.twodo.android.data.api.service.CoupleService
+import dev.cankolay.twodo.android.data.api.service.NoteService
 import dev.cankolay.twodo.android.domain.model.api.ApiResult
+import dev.cankolay.twodo.android.domain.model.api.ErrorReason
 import dev.cankolay.twodo.android.domain.model.api.note.Note
 import dev.cankolay.twodo.android.domain.repository.api.NoteRepository
 import javax.inject.Inject
 
 class NoteRepositoryImpl
 @Inject
-constructor(val todoService: TodoService) : NoteRepository {
-    override suspend fun create(title: String) =
-        when (val result = todoService.create(dto = CreateTodoRequestDto(title = title))) {
+constructor(
+    private val noteService: NoteService,
+    private val coupleService: CoupleService
+) : NoteRepository {
+    override suspend fun create(title: String) = withCouple {
+        when (val result = noteService.create(dto = CreateNoteRequestDto(title = title))) {
             is ApiResult.Success -> ApiResult.Success(
                 message = result.message,
-                data = result.data.toDomain()
+                data = result.data.toDomain(),
+                code = result.code
             )
 
             is ApiResult.Loading -> result
@@ -24,52 +30,84 @@ constructor(val todoService: TodoService) : NoteRepository {
             is ApiResult.Error -> result
             is ApiResult.Fatal -> result
         }
+    }
 
-    override suspend fun getAll() =
-        when (val result = todoService.getAll()) {
+    override suspend fun getAll() = withCouple {
+        when (val result = noteService.getAll()) {
             is ApiResult.Success -> ApiResult.Success(
                 message = result.message,
-                data = result.data.map { it.toDomain() })
+                data = result.data.map { it.toDomain() },
+                code = result.code
+            )
 
             is ApiResult.Loading -> result
 
             is ApiResult.Error -> result
             is ApiResult.Fatal -> result
         }
+    }
 
-    override suspend fun get(id: String) = when (val result = todoService.get(id = id)) {
-        is ApiResult.Success -> ApiResult.Success(
-            message = result.message,
-            data = result.data.toDomain()
-        )
+    override suspend fun get(id: String) = withCouple {
+        when (val result = noteService.get(id = id)) {
+            is ApiResult.Success -> ApiResult.Success(
+                message = result.message,
+                data = result.data.toDomain(),
+                code = result.code
+            )
 
-        is ApiResult.Loading -> result
+            is ApiResult.Loading -> result
 
-        is ApiResult.Error -> result
-        is ApiResult.Fatal -> result
+            is ApiResult.Error -> result
+            is ApiResult.Fatal -> result
+        }
     }
 
     override suspend fun update(
         id: String,
         note: Note
-    ) = when (val result = todoService.update(
-        id = id,
-        dto = UpdateTodoRequestDto(
-            title = note.title,
-            content = note.content,
-            completed = note.completed
-        )
-    )) {
-        is ApiResult.Success -> ApiResult.Success(
-            message = result.message,
-            data = result.data.toDomain()
-        )
+    ) = withCouple {
+        when (val result = noteService.update(
+            id = id,
+            dto = UpdateNoteRequestDto(
+                title = note.title,
+                content = note.content
+            )
+        )) {
+            is ApiResult.Success -> ApiResult.Success(
+                message = result.message,
+                data = result.data.toDomain(),
+                code = result.code
+            )
 
-        is ApiResult.Loading -> result
+            is ApiResult.Loading -> result
 
-        is ApiResult.Error -> result
-        is ApiResult.Fatal -> result
+            is ApiResult.Error -> result
+            is ApiResult.Fatal -> result
+        }
     }
 
-    override suspend fun delete(id: String) = todoService.delete(id = id)
+    override suspend fun delete(id: String) = withCouple {
+        noteService.delete(id = id)
+    }
+
+    private suspend fun <T> withCouple(block: suspend () -> ApiResult<T>): ApiResult<T> {
+        return when (val result = coupleService.getMe()) {
+            is ApiResult.Success -> {
+                if (result.data == null) {
+                    ApiResult.Error(
+                        message = "Create a couple before using notes.",
+                        reason = ErrorReason.CLIENT,
+                        code = "couple_required"
+                    )
+                } else {
+                    block()
+                }
+            }
+
+            is ApiResult.Loading -> result
+
+            is ApiResult.Error -> result
+            is ApiResult.Fatal -> result
+        }
+    }
 }

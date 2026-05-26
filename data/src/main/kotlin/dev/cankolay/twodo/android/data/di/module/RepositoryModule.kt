@@ -31,7 +31,7 @@ abstract class RepositoryModule {
     ): InviteRepository
 
     @Binds
-    abstract fun bindTodoRepository(
+    abstract fun bindNoteRepository(
         impl: NoteRepositoryImpl
     ): NoteRepository
 

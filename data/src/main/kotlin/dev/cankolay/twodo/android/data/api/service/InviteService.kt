@@ -15,10 +15,10 @@ import io.ktor.http.path
 import javax.inject.Inject
 
 class InviteService @Inject constructor(private val client: KtorClient) {
-    suspend fun create(dto: CreateInviteRequestDto) = request(no_return = true) {
+    suspend fun create(dto: CreateInviteRequestDto) = request<InviteDto> {
         client().post {
             url {
-                path(ApiConstants.Endpoints.INVITE)
+                path(ApiConstants.Endpoints.INVITES)
             }
 
             setBody(body = dto)
@@ -36,7 +36,7 @@ class InviteService @Inject constructor(private val client: KtorClient) {
     suspend fun handleInvite(id: String, action: InviteAction) = request(no_return = true) {
         client().patch {
             url {
-                path(ApiConstants.Endpoints.INVITE, id)
+                path(ApiConstants.Endpoints.INVITES, id)
             }
 
             setBody(body = HandleInviteRequestDto(action = action.value))

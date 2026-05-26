@@ -9,13 +9,24 @@ import javax.inject.Inject
 class UserRepositoryImpl
 @Inject
 constructor(private val userService: UserService) : UserRepository {
-    override suspend fun initialize() =
-        userService.initialize()
+    override suspend fun initialize() = when (val result = userService.initialize()) {
+        is ApiResult.Success -> ApiResult.Success(
+            message = result.message,
+            data = null,
+            code = result.code
+        )
+
+        is ApiResult.Loading -> result
+
+        is ApiResult.Error -> result
+        is ApiResult.Fatal -> result
+    }
 
     override suspend fun get() = when (val result = userService.get()) {
         is ApiResult.Success -> ApiResult.Success(
             message = result.message,
-            data = result.data.toDomain()
+            data = result.data.toDomain(),
+            code = result.code
         )
 
         is ApiResult.Loading -> result
