@@ -1,4 +1,4 @@
-package dev.cankolay.twodo.android.presentation.view
+package dev.cankolay.twodo.android.presentation.view.onboarding
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -27,10 +27,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -49,6 +46,7 @@ import dev.cankolay.twodo.android.presentation.composable.app.Icon
 import dev.cankolay.twodo.android.presentation.composable.app.layout.AppBottomSheet
 import dev.cankolay.twodo.android.presentation.composable.app.layout.OnboardingLayout
 import dev.cankolay.twodo.android.presentation.navigation.route.Route
+import dev.cankolay.twodo.android.presentation.viewmodel.InvitePartnerFormState
 import dev.cankolay.twodo.android.presentation.viewmodel.InviteViewModel
 import dev.cankolay.twodo.android.presentation.viewmodel.UserViewModel
 import dev.cankolay.twodo.android.presentation.viewmodel.application.AuthViewModel
@@ -78,8 +76,6 @@ fun CoupleSetupView(
             inviteViewModel.fetchInvites()
         }
     }
-
-    var showInviteSheet by remember { mutableStateOf(value = false) }
 
     OnboardingLayout(
         route = Route.CoupleSetup,
@@ -223,7 +219,7 @@ fun CoupleSetupView(
                                                 Icon(icon = Icons.Default.PersonAdd)
                                             },
                                             onClick = {
-                                                showInviteSheet = true
+                                                inviteViewModel.openInvitePartnerSheet()
                                             }
                                         )
                                 )
@@ -233,16 +229,14 @@ fun CoupleSetupView(
                 }
             }
         }) {
-        if (showInviteSheet) {
+        inviteState.inviteForm?.let { form ->
             InvitePartnerSheet(
+                form = form,
                 error = inviteState.error,
                 isLoading = inviteState.isLoading,
-                onDismiss = {
-                    showInviteSheet = false
-                },
-                onInvite = { username ->
-                    inviteViewModel.createInvite(username = username) is ApiResult.Success
-                }
+                onDismiss = { inviteViewModel.dismissInvitePartnerSheet() },
+                onUsernameChange = { inviteViewModel.updateInviteUsername(username = it) },
+                onInvite = { inviteViewModel.submitInvite() is ApiResult.Success }
             )
         }
     }
@@ -251,15 +245,16 @@ fun CoupleSetupView(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun InvitePartnerSheet(
+    form: InvitePartnerFormState,
     error: String?,
     isLoading: Boolean,
     onDismiss: () -> Unit,
-    onInvite: suspend (String) -> Boolean
+    onUsernameChange: (String) -> Unit,
+    onInvite: suspend () -> Boolean
 ) {
     val scope = rememberCoroutineScope()
 
     val sheetState = rememberModalBottomSheetState()
-    var username by remember { mutableStateOf(value = "") }
 
     AppBottomSheet(
         title = stringResource(id = R.string.invite_partner),
@@ -267,10 +262,10 @@ private fun InvitePartnerSheet(
         sheetState = sheetState,
         actions = {
             Button(
-                enabled = username.isNotEmpty() && !isLoading,
+                enabled = form.canSubmit && !isLoading,
                 onClick = {
                     scope.launch {
-                        if (onInvite(username)) {
+                        if (onInvite()) {
                             sheetState.hide()
                             onDismiss()
                         }
@@ -299,17 +294,22 @@ private fun InvitePartnerSheet(
 
                 TextField(
                     modifier = Modifier.fillMaxWidth(),
-                    value = username,
-                    onValueChange = { username = it.trim() },
+                    value = form.username.value,
+                    onValueChange = onUsernameChange,
                     singleLine = true,
-                    label = { Text(text = stringResource(id = R.string.username)) })
+                    label = { Text(text = stringResource(id = R.string.username)) },
+                    isError = form.username.error != null
+                )
 
                 AnimatedVisibility(
-                    visible = username.isEmpty(),
+                    visible = form.username.value.isEmpty() || form.username.error != null,
                     enter = expandVertically(),
                     exit = shrinkVertically()
                 ) {
-                    Text(text = stringResource(id = R.string.username_required))
+                    Text(
+                        text = form.username.error?.let { stringResource(id = it) }
+                            ?: stringResource(id = R.string.username_required)
+                    )
 
                 }
             }

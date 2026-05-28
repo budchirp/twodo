@@ -23,7 +23,7 @@ import dev.cankolay.twodo.android.presentation.navigation.route.Route
 import dev.cankolay.twodo.android.presentation.navigation.route.getDetails
 
 private val routes = listOf(
-    Route.Welcome, Route.CoupleSetup, Route.Notes, Route.Settings
+    Route.Welcome, Route.CoupleSetup, Route.Notes, Route.Calendar, Route.Settings
 )
 
 enum class AppTopAppBarType {

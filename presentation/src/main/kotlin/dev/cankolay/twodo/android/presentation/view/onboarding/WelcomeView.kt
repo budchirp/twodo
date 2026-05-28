@@ -1,4 +1,4 @@
-package dev.cankolay.twodo.android.presentation.view
+package dev.cankolay.twodo.android.presentation.view.onboarding
 
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.layout.fillMaxWidth

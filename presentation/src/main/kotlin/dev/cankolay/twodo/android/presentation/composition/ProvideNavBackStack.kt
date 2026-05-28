@@ -35,7 +35,14 @@ fun ProvideNavBackStack(startRoute: Route, content: @Composable () -> Unit) {
 private fun NavKey?.shouldReplaceWith(route: Route) =
     when (route) {
         Route.Welcome -> this != Route.Welcome
+        Route.StartupError -> this != Route.StartupError
+        Route.ProfileSetup -> this != Route.ProfileSetup
         Route.CoupleSetup -> this != Route.CoupleSetup
-        Route.Notes -> this == null || this == Route.Welcome || this == Route.CoupleSetup
+        Route.Notes -> this == null ||
+                this == Route.Welcome ||
+                this == Route.StartupError ||
+                this == Route.ProfileSetup ||
+                this == Route.CoupleSetup
+
         else -> this != route
     }

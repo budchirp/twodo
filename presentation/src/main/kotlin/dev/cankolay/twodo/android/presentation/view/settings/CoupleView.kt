@@ -27,10 +27,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -79,8 +76,6 @@ fun CoupleView(userViewModel: UserViewModel = hiltViewModel()) {
             snackbarHostState.showSnackbar(message = it)
         }
     }
-
-    var showBreakupPartnerSheet by remember { mutableStateOf(value = false) }
 
     AppLayout(route = Route.Couple) {
         if (user == null) {
@@ -209,7 +204,7 @@ fun CoupleView(userViewModel: UserViewModel = hiltViewModel()) {
                                 contentColor = MaterialTheme.colorScheme.onError
                             ),
                             onClick = {
-                                showBreakupPartnerSheet = true
+                                userViewModel.openLeaveCoupleSheet()
                             }) {
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
@@ -256,12 +251,10 @@ fun CoupleView(userViewModel: UserViewModel = hiltViewModel()) {
             }
         }
 
-        if (showBreakupPartnerSheet) {
+        if (userState.isLeaveCoupleSheetVisible) {
             BreakupPartnerSheet(
                 isLoading = isLoading,
-                onDismiss = {
-                    showBreakupPartnerSheet = false
-                },
+                onDismiss = { userViewModel.dismissLeaveCoupleSheet() },
                 onLeave = {
                     userViewModel.leaveCouple() is ApiResult.Success
                 }

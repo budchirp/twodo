@@ -26,10 +26,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +51,7 @@ import dev.cankolay.twodo.android.presentation.composition.LocalNavBackStack
 import dev.cankolay.twodo.android.presentation.composition.LocalSnackbarHostState
 import dev.cankolay.twodo.android.presentation.navigation.route.Route
 import dev.cankolay.twodo.android.presentation.viewmodel.NoteViewModel
+import dev.cankolay.twodo.android.presentation.viewmodel.UserViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
@@ -64,7 +62,11 @@ import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class, FlowPreview::class)
 @Composable
-fun NoteView(id: String, noteViewModel: NoteViewModel = hiltViewModel()) {
+fun NoteView(
+    id: String,
+    noteViewModel: NoteViewModel = hiltViewModel(),
+    userViewModel: UserViewModel = hiltViewModel()
+) {
     val snackbarHostState = LocalSnackbarHostState.current
 
     val navBackStack = LocalNavBackStack.current
@@ -81,41 +83,34 @@ fun NoteView(id: String, noteViewModel: NoteViewModel = hiltViewModel()) {
         }
     }
 
-    val state = rememberRichTextState()
-    state.config.linkColor = MaterialTheme.colorScheme.primary
-
-    LaunchedEffect(key1 = note) {
-        state.setMarkdown(markdown = note?.content ?: "")
-        state.selection = TextRange(index = 0)
+    LaunchedEffect(key1 = uiState.errorCode) {
+        if (uiState.errorCode == "error-profile-required") {
+            userViewModel.fetchUser()
+            navBackStack.add(element = Route.ProfileSetup)
+            while (navBackStack.size > 1) {
+                navBackStack.removeAt(0)
+            }
+        }
     }
 
-    note?.let { loadedNote ->
-        var noteDraft by remember(key1 = loadedNote.id) { mutableStateOf(value = loadedNote.copy()) }
+    val richTextState = rememberRichTextState()
+    richTextState.config.linkColor = MaterialTheme.colorScheme.primary
+
+    note?.let {
+        val noteDraft = uiState.noteDraft ?: return@let
 
         LaunchedEffect(key1 = noteDraft.id) {
-            snapshotFlow {
-                listOf(noteDraft, state.annotatedString)
-            }
+            richTextState.setMarkdown(markdown = noteDraft.content)
+            richTextState.selection = TextRange(index = 0)
+            snapshotFlow { richTextState.toMarkdown() }
                 .debounce(500)
                 .distinctUntilChanged()
-                .collectLatest {
-                    noteDraft = noteDraft.copy(
-                        updatedAt = OffsetDateTime.now().toString()
-                    )
-
-                    noteViewModel.updateNote(
-                        id = id,
-                        note = noteDraft.copy(
-                            content = state.toMarkdown(),
-                        )
-                    )
+                .collectLatest { content ->
+                    noteViewModel.updateNoteDraftContent(content = content)
                 }
         }
 
         val scope = rememberCoroutineScope()
-
-        var showBottomSheet by remember { mutableStateOf(value = false) }
-        var showDeleteNoteSheet by remember { mutableStateOf(value = false) }
         val bottomSheetState = rememberModalBottomSheetState()
 
         AppLayout(
@@ -132,7 +127,9 @@ fun NoteView(id: String, noteViewModel: NoteViewModel = hiltViewModel()) {
                     title = {
                         BasicTextField(
                             value = noteDraft.title,
-                            onValueChange = { title -> noteDraft = noteDraft.copy(title = title) },
+                            onValueChange = { title ->
+                                noteViewModel.updateNoteDraftTitle(title = title)
+                            },
                             textStyle = LocalTextStyle.current.copy(
                                 color = MaterialTheme.colorScheme.onSurface
                             ),
@@ -150,7 +147,7 @@ fun NoteView(id: String, noteViewModel: NoteViewModel = hiltViewModel()) {
                     .imePadding()
             ) {
                 BasicRichTextEditor(
-                    state = state,
+                    state = richTextState,
                     textStyle = LocalTextStyle.current.copy(
                         color = MaterialTheme.colorScheme.onSurface
                     ),
@@ -181,24 +178,20 @@ fun NoteView(id: String, noteViewModel: NoteViewModel = hiltViewModel()) {
                             Text(text = "hi")
                         }
 
-                        FilledIconButton(onClick = {
-                            showBottomSheet = true
-                        }) {
+                        FilledIconButton(onClick = { noteViewModel.openNoteActionsSheet() }) {
                             Icon(icon = Icons.Default.MoreVert)
                         }
                     }
                 }
             }
 
-            if (showBottomSheet) {
+            if (uiState.isNoteActionsSheetVisible) {
                 val sheetTitle =
                     if (noteDraft.title.isBlank()) stringResource(id = R.string.notes) else noteDraft.title
 
                 AppBottomSheet(
                     title = sheetTitle,
-                    onDismiss = {
-                        showBottomSheet = false
-                    },
+                    onDismiss = { noteViewModel.dismissNoteActionsSheet() },
                     sheetState = bottomSheetState
                 ) {
                     item {
@@ -222,8 +215,7 @@ fun NoteView(id: String, noteViewModel: NoteViewModel = hiltViewModel()) {
                                         scope.launch {
                                             bottomSheetState.hide()
                                         }.invokeOnCompletion {
-                                            showBottomSheet = false
-                                            showDeleteNoteSheet = true
+                                            noteViewModel.requestDeleteNote()
                                         }
                                     },
                                     leadingContent = {
@@ -236,12 +228,10 @@ fun NoteView(id: String, noteViewModel: NoteViewModel = hiltViewModel()) {
                 }
             }
 
-            if (showDeleteNoteSheet) {
+            if (uiState.isDeleteNoteSheetVisible) {
                 DeleteNoteSheet(
                     isLoading = uiState.isLoading,
-                    onDismiss = {
-                        showDeleteNoteSheet = false
-                    },
+                    onDismiss = { noteViewModel.dismissDeleteNoteSheet() },
                     onDelete = {
                         when (noteViewModel.deleteNote(id = id)) {
                             is ApiResult.Success -> {

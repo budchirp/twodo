@@ -1,13 +1,17 @@
 package dev.cankolay.twodo.android.presentation.navigation.route
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Colorize
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Translate
+import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.Composable
@@ -24,6 +28,12 @@ sealed interface Route : NavKey {
     data object Welcome : Route
 
     @Serializable
+    data object StartupError : Route
+
+    @Serializable
+    data object ProfileSetup : Route
+
+    @Serializable
     data object CoupleSetup : Route
 
     @Serializable
@@ -31,6 +41,12 @@ sealed interface Route : NavKey {
 
     @Serializable
     data class Note(val id: String) : Route
+
+    @Serializable
+    data object Calendar : Route
+
+    @Serializable
+    data object PeriodTracker : Route
 
 
     @Serializable
@@ -66,12 +82,41 @@ fun NavKey.getDetails(): RouteDetail {
                 outlined = Icons.Outlined.Edit,
             )
         ),
+        Route.Calendar to RouteDetail(
+            title = stringResource(id = R.string.calendar),
+            description = stringResource(id = R.string.calendar_desc),
+            icon = RouteDetailIcon(
+                default = Icons.Filled.CalendarMonth,
+                outlined = Icons.Outlined.CalendarMonth,
+            )
+        ),
+        Route.PeriodTracker to RouteDetail(
+            title = stringResource(id = R.string.period_tracker),
+            description = stringResource(id = R.string.period_tracker_desc),
+            icon = RouteDetailIcon(
+                default = Icons.Default.Info,
+            )
+        ),
         Route.Settings to RouteDetail(
             title = stringResource(id = R.string.settings),
             description = stringResource(id = R.string.settings),
             icon = RouteDetailIcon(
                 default = Icons.Filled.Settings,
                 outlined = Icons.Outlined.Settings
+            )
+        ),
+        Route.StartupError to RouteDetail(
+            title = stringResource(id = R.string.startup_error_title),
+            description = stringResource(id = R.string.startup_error_desc),
+            icon = RouteDetailIcon(
+                default = Icons.Default.CloudOff,
+            )
+        ),
+        Route.ProfileSetup to RouteDetail(
+            title = stringResource(id = R.string.profile_setup),
+            description = stringResource(id = R.string.profile_setup_desc),
+            icon = RouteDetailIcon(
+                default = Icons.Default.Person,
             )
         ),
         Route.CoupleSetup to RouteDetail(
@@ -129,5 +174,5 @@ fun NavKey.getDetails(): RouteDetail {
 }
 
 val navigationRoutes = listOf(
-    Route.Notes, Route.Settings
+    Route.Notes, Route.Calendar, Route.Settings
 )

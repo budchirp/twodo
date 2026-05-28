@@ -44,6 +44,7 @@ fun AppUI(
         authState?.token,
         authUiState.isAuthenticating,
         user?.id,
+        user?.profileCompleted,
         userUiState.error
     ) {
         val token = authState?.token
@@ -60,7 +61,10 @@ fun AppUI(
             when {
                 authState.token.isEmpty() -> Route.Welcome
                 authUiState.isAuthenticating -> null
+                userUiState.errorCode == "error-profile-required" -> Route.ProfileSetup
                 user == null && userUiState.error == null -> null
+                user == null && userUiState.error != null -> Route.StartupError
+                user?.profileCompleted == false -> Route.ProfileSetup
                 user?.couple != null -> Route.Notes
                 else -> Route.CoupleSetup
             }

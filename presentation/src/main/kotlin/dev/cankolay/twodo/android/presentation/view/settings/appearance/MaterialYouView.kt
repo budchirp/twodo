@@ -42,6 +42,7 @@ import dev.cankolay.twodo.android.domain.model.application.MaterialYou
 import dev.cankolay.twodo.android.domain.model.application.SettingsState
 import dev.cankolay.twodo.android.presentation.R
 import dev.cankolay.twodo.android.presentation.composable.app.Card
+import dev.cankolay.twodo.android.presentation.composable.app.CardList
 import dev.cankolay.twodo.android.presentation.composable.app.CardStackList
 import dev.cankolay.twodo.android.presentation.composable.app.CardStackListItem
 import dev.cankolay.twodo.android.presentation.composable.app.Icon
@@ -159,25 +160,22 @@ fun MaterialYouView(settingsViewModel: SettingsViewModel = hiltViewModel()) {
 
                     val isEnabled = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
-                    CardStackList(
+                    CardList(
+
                         modifier =
                             Modifier
                                 .padding(horizontal = 16.dp),
-                        items = listOf(
-                            CardStackListItem(
-                                title = stringResource(id = R.string.wallpaper_colors),
-                                description = if (!isEnabled) stringResource(id = R.string.material_you_desc_unsupported) else null,
-                                trailingContent = {
-                                    Switch(
-                                        checked = isEnabled && state.materialYou is MaterialYou.WALLPAPER,
-                                        enabled = isEnabled,
-                                        onCheckedChange = onClick,
-                                    )
-                                },
+                        title = stringResource(id = R.string.wallpaper_colors),
+                        description = if (!isEnabled) stringResource(id = R.string.material_you_desc_unsupported) else null,
+                        enabled = isEnabled,
+                        onClick = { onClick(state.materialYou !is MaterialYou.WALLPAPER) },
+                        trailingContent = {
+                            Switch(
+                                checked = isEnabled && state.materialYou is MaterialYou.WALLPAPER,
                                 enabled = isEnabled,
-                                onClick = { onClick(state.materialYou !is MaterialYou.WALLPAPER) }
+                                onCheckedChange = onClick,
                             )
-                        )
+                        },
                     )
                 }
             }

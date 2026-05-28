@@ -15,10 +15,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -36,12 +33,17 @@ import dev.cankolay.twodo.android.presentation.composable.app.layout.AppLayout
 import dev.cankolay.twodo.android.presentation.composable.app.layout.AppTopAppBar
 import dev.cankolay.twodo.android.presentation.composition.LocalNavBackStack
 import dev.cankolay.twodo.android.presentation.navigation.route.Route
+import dev.cankolay.twodo.android.presentation.viewmodel.CreateNoteFormState
 import dev.cankolay.twodo.android.presentation.viewmodel.NoteViewModel
+import dev.cankolay.twodo.android.presentation.viewmodel.UserViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun NotesView(noteViewModel: NoteViewModel = hiltViewModel()) {
+fun NotesView(
+    noteViewModel: NoteViewModel = hiltViewModel(),
+    userViewModel: UserViewModel = hiltViewModel()
+) {
     val navBackStack = LocalNavBackStack.current
 
     val state by noteViewModel.uiState.collectAsStateWithLifecycle()
@@ -53,12 +55,20 @@ fun NotesView(noteViewModel: NoteViewModel = hiltViewModel()) {
     val isLoading = state.isLoading
     val error = state.error
 
-    var showCreateNoteSheet by remember { mutableStateOf(value = false) }
+    LaunchedEffect(key1 = state.errorCode) {
+        if (state.errorCode == "error-profile-required") {
+            userViewModel.fetchUser()
+            navBackStack.add(element = Route.ProfileSetup)
+            while (navBackStack.size > 1) {
+                navBackStack.removeAt(0)
+            }
+        }
+    }
 
     AppLayout(route = Route.Notes, topBar = { context ->
         AppTopAppBar(context = context, trailingContent = {
             IconButton(onClick = {
-                showCreateNoteSheet = true
+                noteViewModel.openCreateNoteSheet()
             }) {
                 Icon(icon = Icons.Default.Add)
             }
@@ -116,14 +126,14 @@ fun NotesView(noteViewModel: NoteViewModel = hiltViewModel()) {
             }
         }
 
-        if (showCreateNoteSheet) {
+        state.createNoteForm?.let { form ->
             CreateNoteSheet(
+                form = form,
                 isLoading = isLoading,
-                onDismiss = {
-                    showCreateNoteSheet = false
-                },
-                onCreate = { title ->
-                    when (val result = noteViewModel.createNote(title = title)) {
+                onDismiss = { noteViewModel.dismissCreateNoteSheet() },
+                onTitleChange = { noteViewModel.updateCreateNoteTitle(title = it) },
+                onCreate = {
+                    when (val result = noteViewModel.submitCreateNote()) {
                         is ApiResult.Success -> {
                             navBackStack.add(element = Route.Note(id = result.data.id))
                             true
@@ -140,15 +150,15 @@ fun NotesView(noteViewModel: NoteViewModel = hiltViewModel()) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateNoteSheet(
+    form: CreateNoteFormState,
     isLoading: Boolean,
     onDismiss: () -> Unit,
-    onCreate: suspend (title: String) -> Boolean
+    onTitleChange: (String) -> Unit,
+    onCreate: suspend () -> Boolean
 ) {
     val scope = rememberCoroutineScope()
 
     val sheetState = rememberModalBottomSheetState()
-
-    var title by remember { mutableStateOf(value = "") }
 
     AppBottomSheet(
         title = stringResource(id = R.string.create_note),
@@ -156,10 +166,10 @@ fun CreateNoteSheet(
         sheetState = sheetState,
         actions = {
             Button(
-                enabled = title.isNotBlank() && !isLoading,
+                enabled = form.canSubmit && !isLoading,
                 onClick = {
                     scope.launch {
-                        if (onCreate(title)) {
+                        if (onCreate()) {
                             sheetState.hide()
                             onDismiss()
                         }
@@ -173,9 +183,13 @@ fun CreateNoteSheet(
         item {
             TextField(
                 modifier = Modifier.fillMaxWidth(),
-                value = title,
-                onValueChange = { title = it },
-                label = { Text(text = stringResource(id = R.string.title)) }
+                value = form.title.value,
+                onValueChange = onTitleChange,
+                label = { Text(text = stringResource(id = R.string.title)) },
+                isError = form.title.error != null,
+                supportingText = form.title.error?.let { error ->
+                    { Text(text = stringResource(id = error)) }
+                }
             )
         }
     }

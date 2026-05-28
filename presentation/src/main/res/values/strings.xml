@@ -27,6 +27,7 @@
     <string name="loading">Loading</string>
     <string name="pending">Pending</string>
     <string name="title">Title</string>
+    <string name="title_required">Enter a title to continue.</string>
     <string name="create">Create</string>
     <string name="delete">Delete</string>
     <string name="try_again">Try again</string>
@@ -127,4 +128,118 @@
     <string name="about_view_on">View on %1$s</string>
     <string name="about_view_on_desc">View this project on %1$s</string>
     <string name="error">Error</string>
+
+    <string name="startup_error_title">Cannot reach TwoDo</string>
+    <string name="startup_error_desc">We could not connect to the backend. Your session is still saved; try again when the server is available.</string>
+    <string name="startup_error_card_title">Backend unavailable</string>
+    <string name="startup_error_unknown">Could not connect to the backend.</string>
+
+    <string name="profile_setup">Profile setup</string>
+    <string name="profile_setup_title">Complete your profile</string>
+    <string name="profile_setup_desc">Add your name and gender before using shared app features.</string>
+    <string name="profile_setup_error_title">We could not update your profile</string>
+    <string name="name">Name</string>
+    <string name="name_required">Enter your name to continue.</string>
+    <string name="gender_required">Select your gender to continue.</string>
+    <string name="female">Female</string>
+    <string name="male">Male</string>
+
+    <string name="calendar">Calendar</string>
+    <string name="calendar_desc">Shared activity tracking</string>
+    <string name="calendar_error">Failed to get calendar entries</string>
+    <string name="calendar_empty_title">No calendar entries</string>
+    <string name="calendar_empty_desc">Use the plus button to add a note or activity.</string>
+    <string name="calendar_range">Date range</string>
+    <string name="calendar_date_pattern" translatable="false">dd MMM yyyy</string>
+    <string name="create_calendar_entry">Create calendar entry</string>
+    <string name="edit_calendar_entry">Edit calendar entry</string>
+    <string name="delete_calendar_entry">Delete calendar entry?</string>
+    <string name="delete_calendar_entry_desc">This calendar entry will be permanently deleted.</string>
+    <string name="date">Date</string>
+    <string name="date_format_hint">Use YYYY-MM-DD.</string>
+    <string name="invalid_date">Enter a valid date as YYYY-MM-DD.</string>
+    <string name="notes_field">Notes</string>
+    <string name="no_notes">No notes</string>
+
+    <string name="calendar_type_note">Note</string>
+    <string name="calendar_type_period">Period</string>
+    <string name="calendar_type_sexual_activity">Sexual activity</string>
+
+    <string name="period_tracker">Period tracker</string>
+    <string name="period_tracker_desc">Expected period, ovulation, and cycle tips</string>
+    <string name="period_tracker_error">Failed to load period tracker</string>
+    <string name="period_tracker_empty_desc">Add period entries over time to see estimates.</string>
+    <string name="period_tracker_averages">Average cycle: %1$s days - period: %2$s days</string>
+    <string name="next_period_window">Next estimated period</string>
+    <string name="ovulation_window">Estimated ovulation window</string>
+    <string name="medical_disclaimer">Medical disclaimer</string>
+    <string name="prediction_unavailable">Prediction unavailable</string>
+    <string name="prediction_unavailable_desc">Predictions appear after enough period history is available. Estimates are not medical certainty.</string>
+    <string name="recent_period_range">Recent period range</string>
+    <string name="period_range_desc">%1$s - %2$s - %3$s days</string>
+    <string name="cycle_history">Cycle history</string>
+    <string name="cycle_history_desc">Started %1$s - period %2$s days - cycle %3$s days</string>
+    <string name="expected_period">Expected period</string>
+    <string name="period_dates_added_calendar">Add and edit period dates from the Calendar screen.</string>
+    <string name="period_tips_title">Tips and tricks</string>
+    <string name="period_tips_desc">Small habits make predictions more useful over time.</string>
+    <string name="period_tip_log_consistently">Log consistently</string>
+    <string name="period_tip_log_consistently_desc">Mark start, day, and end entries from the calendar when they happen.</string>
+    <string name="period_tip_symptoms">Track symptoms</string>
+    <string name="period_tip_symptoms_desc">Symptoms and flow help you compare recent cycles with older ones.</string>
+    <string name="period_tip_not_medical">Treat predictions as estimates</string>
+    <string name="period_tip_not_medical_desc">Use backend predictions as planning hints, not diagnosis or contraception advice.</string>
+
+    <string name="selected_day">%1$s entries</string>
+    <string name="calendar_day_empty_title">Nothing on this day</string>
+    <string name="calendar_day_empty_desc">Tap a day, then use the plus button to add an entry.</string>
+
+    <string name="period_event">Period event</string>
+    <string name="period_event_start">Start</string>
+    <string name="period_event_day">Day</string>
+    <string name="period_event_end">End</string>
+    <string name="flow_level">Flow level</string>
+    <string name="flow_spotting">Spotting</string>
+    <string name="flow_light">Light</string>
+    <string name="flow_medium">Medium</string>
+    <string name="flow_heavy">Heavy</string>
+    <string name="symptoms">Symptoms</string>
+    <string name="symptom_acne">Acne</string>
+    <string name="symptom_back_pain">Back pain</string>
+    <string name="symptom_bloating">Bloating</string>
+    <string name="symptom_breast_tenderness">Breast tenderness</string>
+    <string name="symptom_cramps">Cramps</string>
+    <string name="symptom_fatigue">Fatigue</string>
+    <string name="symptom_headache">Headache</string>
+    <string name="symptom_mood_changes">Mood changes</string>
+    <string name="symptom_nausea">Nausea</string>
+
+    <string name="sex_occurred">Sex occurred</string>
+    <string name="sex_did_not_occur">Sex did not occur</string>
+    <string name="contraception_used">Contraception used</string>
+    <string name="condom_used">Condom used</string>
+    <string name="withdrawal">Withdrawal</string>
+    <string name="emergency_contraception">Emergency contraception</string>
+    <string name="protection_method">Protection method</string>
+    <string name="protection_none">None</string>
+    <string name="protection_condom">Condom</string>
+    <string name="protection_diaphragm">Diaphragm</string>
+    <string name="protection_emergency_contraception">Emergency contraception</string>
+    <string name="protection_fertility_awareness">Fertility awareness</string>
+    <string name="protection_hormonal">Hormonal</string>
+    <string name="protection_implant">Implant</string>
+    <string name="protection_injection">Injection</string>
+    <string name="protection_iud">IUD</string>
+    <string name="protection_patch">Patch</string>
+    <string name="protection_pill">Pill</string>
+    <string name="protection_ring">Ring</string>
+    <string name="protection_withdrawal">Withdrawal</string>
+    <string name="ejaculation_location">Ejaculation location</string>
+    <string name="ejaculation_none">None</string>
+    <string name="ejaculation_condom">Condom</string>
+    <string name="ejaculation_inside_vagina">Inside vagina</string>
+    <string name="ejaculation_outside_vagina">Outside vagina</string>
+    <string name="ejaculation_anal">Anal</string>
+    <string name="ejaculation_oral">Oral</string>
+    <string name="ejaculation_other_body">Other body</string>
 </resources>

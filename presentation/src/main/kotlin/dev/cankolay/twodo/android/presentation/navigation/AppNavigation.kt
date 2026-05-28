@@ -9,10 +9,14 @@ import dev.cankolay.twodo.android.presentation.composition.LocalNavBackStack
 import dev.cankolay.twodo.android.presentation.motion.TransitionType
 import dev.cankolay.twodo.android.presentation.motion.navigationTransition
 import dev.cankolay.twodo.android.presentation.navigation.route.Route
-import dev.cankolay.twodo.android.presentation.view.CoupleSetupView
-import dev.cankolay.twodo.android.presentation.view.WelcomeView
+import dev.cankolay.twodo.android.presentation.view.StartupErrorView
+import dev.cankolay.twodo.android.presentation.view.calendar.CalendarView
+import dev.cankolay.twodo.android.presentation.view.calendar.PeriodTrackerView
 import dev.cankolay.twodo.android.presentation.view.note.NoteView
 import dev.cankolay.twodo.android.presentation.view.note.NotesView
+import dev.cankolay.twodo.android.presentation.view.onboarding.CoupleSetupView
+import dev.cankolay.twodo.android.presentation.view.onboarding.ProfileSetupView
+import dev.cankolay.twodo.android.presentation.view.onboarding.WelcomeView
 import dev.cankolay.twodo.android.presentation.view.settings.AboutView
 import dev.cankolay.twodo.android.presentation.view.settings.CoupleView
 import dev.cankolay.twodo.android.presentation.view.settings.LanguagesView
@@ -46,6 +50,19 @@ fun AppNavigation(
                 WelcomeView()
             }
 
+            entry<Route.StartupError>(metadata = navigationTransition()) {
+                StartupErrorView(
+                    userViewModel = userViewModel
+                )
+            }
+
+            entry<Route.ProfileSetup>(metadata = navigationTransition()) {
+                ProfileSetupView(
+                    userViewModel = userViewModel,
+                    authViewModel = authViewModel
+                )
+            }
+
             entry<Route.CoupleSetup>(metadata = navigationTransition()) {
                 CoupleSetupView(
                     userViewModel = userViewModel,
@@ -61,7 +78,13 @@ fun AppNavigation(
                 NoteView(id = it.id)
             }
 
+            entry<Route.Calendar>(metadata = navigationTransition(type = TransitionType.FADE)) {
+                CalendarView(userViewModel = userViewModel)
+            }
 
+            entry<Route.PeriodTracker>(metadata = navigationTransition()) {
+                PeriodTrackerView()
+            }
 
             entry<Route.Settings>(metadata = navigationTransition(type = TransitionType.FADE)) {
                 SettingsView(

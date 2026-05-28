@@ -1,0 +1,48 @@
+package dev.cankolay.twodo.android.presentation.view.calendar
+
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import dev.cankolay.twodo.android.domain.model.api.calendar.CalendarEntry
+import dev.cankolay.twodo.android.domain.model.api.calendar.CalendarEntryType
+import dev.cankolay.twodo.android.presentation.R
+
+@Composable
+internal fun CalendarEntry.description(): String {
+    val details = when (type) {
+        CalendarEntryType.NOTE -> notes.orEmpty()
+        CalendarEntryType.PERIOD -> listOfNotNull(
+            period?.event?.label(),
+            period?.flowLevel?.label(),
+            period?.symptoms?.takeIf { it.isNotEmpty() }?.map { symptom -> symptom.label() }
+                ?.joinToString(),
+            notes
+        ).joinToString(separator = " · ")
+
+        CalendarEntryType.SEXUAL_ACTIVITY -> listOfNotNull(
+            sexualActivity?.let {
+                stringResource(
+                    id = if (it.sexOccurred) R.string.sex_occurred else R.string.sex_did_not_occur
+                )
+            },
+            sexualActivity?.protectionMethod?.label(),
+            notes
+        ).joinToString(separator = " · ")
+    }
+
+    return details.ifBlank { stringResource(id = R.string.no_notes) }
+}
+
+internal fun CalendarEntry.canManage(isFemale: Boolean) =
+    type != CalendarEntryType.PERIOD || isFemale
+
+@Composable
+internal fun CalendarEntryType.icon(): ImageVector = when (this) {
+    CalendarEntryType.NOTE -> Icons.Default.Edit
+    CalendarEntryType.PERIOD -> Icons.Default.CalendarMonth
+    CalendarEntryType.SEXUAL_ACTIVITY -> Icons.Default.Favorite
+}

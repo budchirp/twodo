@@ -4,12 +4,14 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dev.cankolay.twodo.android.data.repository.api.CalendarRepositoryImpl
 import dev.cankolay.twodo.android.data.repository.api.CoupleRepositoryImpl
 import dev.cankolay.twodo.android.data.repository.api.InviteRepositoryImpl
 import dev.cankolay.twodo.android.data.repository.api.NoteRepositoryImpl
 import dev.cankolay.twodo.android.data.repository.api.UserRepositoryImpl
 import dev.cankolay.twodo.android.data.repository.application.AuthStateRepositoryImpl
 import dev.cankolay.twodo.android.data.repository.application.SettingsStateRepositoryImpl
+import dev.cankolay.twodo.android.domain.repository.api.CalendarRepository
 import dev.cankolay.twodo.android.domain.repository.api.CoupleRepository
 import dev.cankolay.twodo.android.domain.repository.api.InviteRepository
 import dev.cankolay.twodo.android.domain.repository.api.NoteRepository
@@ -20,6 +22,11 @@ import dev.cankolay.twodo.android.domain.repository.application.SettingsStateRep
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
+    @Binds
+    abstract fun bindCalendarRepository(
+        impl: CalendarRepositoryImpl
+    ): CalendarRepository
+
     @Binds
     abstract fun bindCoupleRepository(
         impl: CoupleRepositoryImpl

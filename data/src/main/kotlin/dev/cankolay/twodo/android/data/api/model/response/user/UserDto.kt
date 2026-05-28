@@ -1,6 +1,7 @@
 package dev.cankolay.twodo.android.data.api.model.response.user
 
 import dev.cankolay.twodo.android.domain.model.api.user.Couple
+import dev.cankolay.twodo.android.domain.model.api.user.Gender
 import dev.cankolay.twodo.android.domain.model.api.user.User
 import kotlinx.serialization.Serializable
 
@@ -12,6 +13,7 @@ data class UserDto(
     val name: String,
     val picture: String?,
     val gender: String?,
+    val profileCompleted: Boolean = true,
     val couple: UserCoupleDto?
 )
 
@@ -34,15 +36,21 @@ data class UserCoupleDto(
 
 fun UserDto.toDomain() = User(
     id = id,
+    username = username,
     name = name,
     picture = picture,
+    gender = gender?.let { Gender.fromValue(value = it) },
+    profileCompleted = profileCompleted || (name.isNotBlank() && gender != null),
     couple = couple?.toDomain()
 )
 
 fun UserSummaryDto.toDomain() = User(
     id = id,
+    username = username,
     name = name,
     picture = picture,
+    gender = gender?.let { Gender.fromValue(value = it) },
+    profileCompleted = true,
     couple = null
 )
 
